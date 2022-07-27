@@ -41,4 +41,20 @@ contract FakeChainConfig is ChainConfig {
     modifier onlyBlock(uint64 /*blockNumber*/) override {
         _;
     }
+
+    function setFreeGasAddressAdmin(address freeGasAddressAdminAddress) public override {
+        _setFreeGasAddressAdmin(freeGasAddressAdminAddress);
+    }
+
+    function setFreeGasAddressSize(uint32 newFreeGasAddressSize) public override {
+        _setFreeGasAddressSize(newFreeGasAddressSize);
+    }
+
+    function addFreeGasAddress(address freeGasAddress) public override {
+        _addFreeGasAddress(freeGasAddress);
+    }
+
+    function removeFreeGasAddress(address freeGasAddress) public override {
+        _removeFreeGasAddress(freeGasAddress);
+    }
 }
