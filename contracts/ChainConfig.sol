@@ -228,7 +228,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         return _freeGasAddressMap[freeGasAddress] != 0;
     }
 
-    modifier onlyFromFreeGasAddressAdmin() {
+    modifier onlyFromFreeGasAddressAdmin() virtual {
         require(msg.sender == freeGasAddressAdmin, "change freeGasAddressList: only admin");
         _;
     }
