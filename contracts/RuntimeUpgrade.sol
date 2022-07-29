@@ -27,7 +27,9 @@ contract RuntimeUpgrade is InjectorContextHolder, IRuntimeUpgrade {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract
+        IDeployerProxy deployerProxyContract,
+        IReward rewardContract,
+        IReserve reserveContract
     ) InjectorContextHolder(
         stakingContract,
         slashingIndicatorContract,
@@ -36,7 +38,9 @@ contract RuntimeUpgrade is InjectorContextHolder, IRuntimeUpgrade {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract
+        deployerProxyContract,
+        rewardContract,
+        reserveContract
     ) {
     }
 
@@ -80,7 +84,7 @@ contract RuntimeUpgrade is InjectorContextHolder, IRuntimeUpgrade {
     }
 
     function getSystemContracts() public view returns (address[] memory) {
-        address[] memory result = new address[](8 + _deployedSystemContracts.length);
+        address[] memory result = new address[](10 + _deployedSystemContracts.length);
         // BSC-compatible
         result[0] = address(_STAKING_CONTRACT);
         result[1] = address(_SLASHING_INDICATOR_CONTRACT);
@@ -91,9 +95,11 @@ contract RuntimeUpgrade is InjectorContextHolder, IRuntimeUpgrade {
         result[5] = address(_CHAIN_CONFIG_CONTRACT);
         result[6] = address(_RUNTIME_UPGRADE_CONTRACT);
         result[7] = address(_DEPLOYER_PROXY_CONTRACT);
+        result[8] = address(_REWARD_CONTRACT);
+        result[9] = address(_RESERVE_CONTRACT);
         // copy deployed system smart contracts
         for (uint256 i = 0; i < _deployedSystemContracts.length; i++) {
-            result[8 + i] = _deployedSystemContracts[i];
+            result[10 + i] = _deployedSystemContracts[i];
         }
         return result;
     }

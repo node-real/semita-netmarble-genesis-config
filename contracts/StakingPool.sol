@@ -43,7 +43,9 @@ contract StakingPool is InjectorContextHolder, IStakingPool {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract
+        IDeployerProxy deployerProxyContract,
+        IReward rewardContract,
+        IReserve reserveContract
     ) InjectorContextHolder(
         stakingContract,
         slashingIndicatorContract,
@@ -52,7 +54,9 @@ contract StakingPool is InjectorContextHolder, IStakingPool {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract
+        deployerProxyContract,
+        rewardContract,
+        reserveContract
     ) {
     }
 

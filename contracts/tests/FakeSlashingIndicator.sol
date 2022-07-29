@@ -13,7 +13,9 @@ contract FakeSlashingIndicator is SlashingIndicator {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract
+        IDeployerProxy deployerProxyContract,
+        IReward rewardContract,
+        IReserve reserveContract
     ) SlashingIndicator(
         stakingContract,
         slashingIndicatorContract,
@@ -22,7 +24,9 @@ contract FakeSlashingIndicator is SlashingIndicator {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract
+        deployerProxyContract,
+        rewardContract,
+        reserveContract
     ) {
     }
 
@@ -39,6 +43,10 @@ contract FakeSlashingIndicator is SlashingIndicator {
     }
 
     modifier onlyBlock(uint64 /*blockNumber*/) override {
+        _;
+    }
+
+    modifier onlyFromReward() override {
         _;
     }
 }

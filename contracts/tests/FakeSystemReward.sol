@@ -13,7 +13,9 @@ contract FakeSystemReward is SystemReward {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract
+        IDeployerProxy deployerProxyContract,
+        IReward rewardContract,
+        IReserve reserveContract
     ) SystemReward(
         stakingContract,
         slashingIndicatorContract,
@@ -22,7 +24,9 @@ contract FakeSystemReward is SystemReward {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract
+        deployerProxyContract,
+        rewardContract,
+        reserveContract
     ) {
     }
 
@@ -39,6 +43,10 @@ contract FakeSystemReward is SystemReward {
     }
 
     modifier onlyBlock(uint64 /*blockNumber*/) override {
+        _;
+    }
+
+    modifier onlyFromReward() override {
         _;
     }
 }

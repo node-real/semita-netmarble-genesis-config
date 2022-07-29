@@ -13,7 +13,9 @@ contract FakeChainConfig is ChainConfig {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract
+        IDeployerProxy deployerProxyContract,
+        IReward rewardContract,
+        IReserve reserveContract
     ) ChainConfig(
         stakingContract,
         slashingIndicatorContract,
@@ -22,7 +24,9 @@ contract FakeChainConfig is ChainConfig {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract
+        deployerProxyContract,
+        rewardContract,
+        reserveContract
     ) {
     }
 
@@ -39,6 +43,10 @@ contract FakeChainConfig is ChainConfig {
     }
 
     modifier onlyBlock(uint64 /*blockNumber*/) override {
+        _;
+    }
+
+    modifier onlyFromReward() override {
         _;
     }
 }
