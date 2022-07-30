@@ -157,16 +157,17 @@ type genesisConfig struct {
 	Features struct {
 		RuntimeUpgradeBlock *math.HexOrDecimal256 `json:"runtimeUpgradeBlock"`
 	} `json:"features"`
-	Deployers       []common.Address          `json:"deployers"`
-	Validators      []common.Address          `json:"validators"`
-	Owners          []common.Address          `json:"owners"`
-	SystemTreasury  map[common.Address]uint16 `json:"systemTreasury"`
-	ConsensusParams consensusParams           `json:"consensusParams"`
-	VotingPeriod    int64                     `json:"votingPeriod"`
-	Faucet          map[common.Address]string `json:"faucet"`
-	CommissionRate  int64                     `json:"commissionRate"`
-	InitialStakes   map[common.Address]string `json:"initialStakes"`
-	RewardOwner     common.Address            `json:"rewardOwner"`
+	Deployers           []common.Address          `json:"deployers"`
+	Validators          []common.Address          `json:"validators"`
+	Owners              []common.Address          `json:"owners"`
+	SystemTreasury      map[common.Address]uint16 `json:"systemTreasury"`
+	ConsensusParams     consensusParams           `json:"consensusParams"`
+	VotingPeriod        int64                     `json:"votingPeriod"`
+	Faucet              map[common.Address]string `json:"faucet"`
+	CommissionRate      int64                     `json:"commissionRate"`
+	InitialStakes       map[common.Address]string `json:"initialStakes"`
+	RewardOwner         common.Address            `json:"rewardOwner"`
+	FreeGasAddressAdmin common.Address            `json:"freeGasAddressAdmin"`
 }
 
 func traceCallError(deployedBytecode []byte) {
@@ -312,7 +313,7 @@ func createGenesisConfig(config genesisConfig, targetFile string) error {
 		initialStakes,
 		uint16(config.CommissionRate),
 	}, initialStakeTotal)
-	invokeConstructorOrPanic(genesis, chainConfigAddress, chainConfigRawArtifact, []string{"uint32", "uint32", "uint32", "uint32", "uint32", "uint32", "uint256", "uint256"}, []interface{}{
+	invokeConstructorOrPanic(genesis, chainConfigAddress, chainConfigRawArtifact, []string{"uint32", "uint32", "uint32", "uint32", "uint32", "uint32", "uint256", "uint256", "address"}, []interface{}{
 		config.ConsensusParams.ActiveValidatorsLength,
 		config.ConsensusParams.EpochBlockInterval,
 		config.ConsensusParams.MisdemeanorThreshold,
@@ -321,6 +322,7 @@ func createGenesisConfig(config genesisConfig, targetFile string) error {
 		config.ConsensusParams.UndelegatePeriod,
 		(*big.Int)(config.ConsensusParams.MinValidatorStakeAmount),
 		(*big.Int)(config.ConsensusParams.MinStakingAmount),
+		config.FreeGasAddressAdmin,
 	}, nil)
 	invokeConstructorOrPanic(genesis, slashingIndicatorAddress, slashingIndicatorRawArtifact, []string{}, []interface{}{}, nil)
 	invokeConstructorOrPanic(genesis, stakingPoolAddress, stakingPoolRawArtifact, []string{}, []interface{}{}, nil)
@@ -417,12 +419,16 @@ var localNetConfig = genesisConfig{
 	Deployers: []common.Address{
 		common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
 	},
+	Owners: []common.Address{
+		common.HexToAddress("0x108e96C530cD6FC316231A9D1E2CD8F6b10de425"),
+	},
+
 	// list of default validators
 	Validators: []common.Address{
 		common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
 	},
 	SystemTreasury: map[common.Address]uint16{
-		common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"): 10000,
+		common.HexToAddress("0x108e96C530cD6FC316231A9D1E2CD8F6b10de425"): 10000,
 	},
 	ConsensusParams: consensusParams{
 		ActiveValidatorsLength:   1,
@@ -441,12 +447,19 @@ var localNetConfig = genesisConfig{
 	// owner of the governance
 	VotingPeriod: 20, // 1 minute
 	// faucet
+	/**
+		 "0xaE3CAC838Df7E2b5f98F6544b2E4c13DeA6fA0EC": "0x52b7d2dcc80cd2e4000000",
+	        "0x108e96C530cD6FC316231A9D1E2CD8F6b10de425": "0x52b7d2dcc80cd2e4000000"
+	*/
 	Faucet: map[common.Address]string{
 		common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"): "0x21e19e0c9bab2400000",
 		common.HexToAddress("0x57BA24bE2cF17400f37dB3566e839bfA6A2d018a"): "0x21e19e0c9bab2400000",
 		common.HexToAddress("0xEbCf9D06cf9333706E61213F17A795B2F7c55F1b"): "0x21e19e0c9bab2400000",
+		common.HexToAddress("0xaE3CAC838Df7E2b5f98F6544b2E4c13DeA6fA0EC"): "0x21e19e0c9bab2400000",
+		common.HexToAddress("0x108e96C530cD6FC316231A9D1E2CD8F6b10de425"): "0x21e19e0c9bab2400000",
 	},
-	RewardOwner: common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
+	RewardOwner:         common.HexToAddress("0x108e96C530cD6FC316231A9D1E2CD8F6b10de425"),
+	FreeGasAddressAdmin: common.HexToAddress("0x108e96C530cD6FC316231A9D1E2CD8F6b10de425"),
 }
 
 var devNetConfig = genesisConfig{
@@ -490,7 +503,8 @@ var devNetConfig = genesisConfig{
 		common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"): "0x21e19e0c9bab2400000",    // governance
 		common.HexToAddress("0xb891fe7b38f857f53a7b5529204c58d5c487280b"): "0x52b7d2dcc80cd2e4000000", // faucet (10kk)
 	},
-	RewardOwner: common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
+	RewardOwner:         common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
+	FreeGasAddressAdmin: common.HexToAddress("0x108e96C530cD6FC316231A9D1E2CD8F6b10de425"),
 }
 
 func main() {

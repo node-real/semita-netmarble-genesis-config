@@ -72,7 +72,8 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         uint32 validatorJailEpochLength,
         uint32 undelegatePeriod,
         uint256 minValidatorStakeAmount,
-        uint256 minStakingAmount
+        uint256 minStakingAmount,
+        address _freeGasAddressAdmin
     ) external initializer {
         _consensusParams.activeValidatorsLength = activeValidatorsLength;
         emit ActiveValidatorsLengthChanged(0, activeValidatorsLength);
@@ -92,6 +93,8 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         emit MinStakingAmountChanged(0, minStakingAmount);
         freeGasAddressSize = 100;
         emit FreeGasAddressSizeChanged(0, 100);
+        freeGasAddressAdmin = _freeGasAddressAdmin;
+        emit FreeGasAddressAdminChanged(freeGasAddressAdmin, _freeGasAddressAdmin);
     }
 
     function getActiveValidatorsLength() external view override returns (uint32) {
