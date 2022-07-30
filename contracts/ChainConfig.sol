@@ -238,6 +238,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     modifier onlyFromFreeGasAddressAdmin() virtual {
         require(msg.sender == freeGasAddressAdmin, "change freeGasAddressList: only admin");
         _;
+    }    
 
     function getEnableDelegate() external view returns (bool) {
         return enableDelegate;
