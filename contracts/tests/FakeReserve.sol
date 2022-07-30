@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.0;
 
-import "../DeployerProxy.sol";
+import "../Reserve.sol";
 
-contract FakeDeployerProxy is DeployerProxy {
+contract FakeReserve is Reserve {
 
     constructor(
         IStaking stakingContract,
@@ -16,7 +16,7 @@ contract FakeDeployerProxy is DeployerProxy {
         IDeployerProxy deployerProxyContract,
         IReward rewardContract,
         IReserve reserveContract
-    ) DeployerProxy(
+    ) Reserve(
         stakingContract,
         slashingIndicatorContract,
         systemRewardContract,

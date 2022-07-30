@@ -13,7 +13,9 @@ contract SlashingIndicator is ISlashingIndicator, InjectorContextHolder {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract
+        IDeployerProxy deployerProxyContract,
+        IReward rewardContract,
+        IReserve reserveContract
     ) InjectorContextHolder(
         stakingContract,
         slashingIndicatorContract,
@@ -22,7 +24,9 @@ contract SlashingIndicator is ISlashingIndicator, InjectorContextHolder {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract
+        deployerProxyContract,
+        rewardContract,
+        reserveContract
     ) {
     }
 

@@ -43,7 +43,9 @@ contract DeployerProxy is InjectorContextHolder, IDeployerProxy {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract
+        IDeployerProxy deployerProxyContract,
+        IReward rewardContract,
+        IReserve reserveContract
     ) InjectorContextHolder(
         stakingContract,
         slashingIndicatorContract,
@@ -52,7 +54,9 @@ contract DeployerProxy is InjectorContextHolder, IDeployerProxy {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract
+        deployerProxyContract,
+        rewardContract,
+        reserveContract
     ) {
     }
 
