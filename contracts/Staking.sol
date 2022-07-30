@@ -129,7 +129,9 @@ contract Staking is InjectorContextHolder, IStaking {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract
+        IDeployerProxy deployerProxyContract,
+        IReward rewardContract,
+        IReserve reserveContract
     ) InjectorContextHolder(
         stakingContract,
         slashingIndicatorContract,
@@ -138,7 +140,9 @@ contract Staking is InjectorContextHolder, IStaking {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract
+        deployerProxyContract,
+        rewardContract,
+        reserveContract
     ) {
     }
 
@@ -251,10 +255,12 @@ contract Staking is InjectorContextHolder, IStaking {
     }
 
     function delegate(address validatorAddress) payable external override {
+        require(_CHAIN_CONFIG_CONTRACT.getEnableDelegate(), "delegate should enabled");
         _delegateTo(msg.sender, validatorAddress, msg.value);
     }
 
     function undelegate(address validatorAddress, uint256 amount) external override {
+        require(_CHAIN_CONFIG_CONTRACT.getEnableDelegate(), "delegate should enabled");
         _undelegateFrom(msg.sender, validatorAddress, amount);
     }
 
@@ -538,14 +544,15 @@ contract Staking is InjectorContextHolder, IStaking {
         systemFee = 0;
     }
 
-    function registerValidator(address validatorAddress, uint16 commissionRate) payable external override {
-        uint256 initialStake = msg.value;
-        // // initial stake amount should be greater than minimum validator staking amount
-        require(initialStake >= _CHAIN_CONFIG_CONTRACT.getMinValidatorStakeAmount(), "too low");
-        require(initialStake % BALANCE_COMPACT_PRECISION == 0, "no remainder");
-        // add new validator as pending
-        _addValidator(validatorAddress, msg.sender, ValidatorStatus.Pending, commissionRate, initialStake, nextEpoch());
-    }
+// fix(seven): temp hack for code size too large
+//    function registerValidator(address validatorAddress, uint16 commissionRate) payable external override {
+//        uint256 initialStake = msg.value;
+//        // // initial stake amount should be greater than minimum validator staking amount
+//        require(initialStake >= _CHAIN_CONFIG_CONTRACT.getMinValidatorStakeAmount(), "too low");
+//        require(initialStake % BALANCE_COMPACT_PRECISION == 0, "no remainder");
+//        // add new validator as pending
+//        _addValidator(validatorAddress, msg.sender, ValidatorStatus.Pending, commissionRate, initialStake, nextEpoch());
+//    }
 
     function addValidator(address account) external onlyFromGovernance virtual override {
         _addValidator(account, account, ValidatorStatus.Active, 0, 0, nextEpoch());
@@ -711,13 +718,14 @@ contract Staking is InjectorContextHolder, IStaking {
 
     function _depositFee(address validatorAddress) internal {
         require(msg.value > 0);
+        _safeTransferWithGasLimit(payable(address(_REWARD_CONTRACT)), msg.value);
         // make sure validator is active
         Validator memory validator = _validatorsMap[validatorAddress];
         require(validator.status != ValidatorStatus.NotFound, "not found");
         uint64 epoch = currentEpoch();
         // increase total pending rewards for validator for current epoch
         ValidatorSnapshot storage currentSnapshot = _touchValidatorSnapshot(validator, epoch);
-        currentSnapshot.totalRewards += uint96(msg.value);
+        currentSnapshot.totalRewards += 0;
         // emit event
         emit ValidatorDeposited(validatorAddress, msg.value, epoch);
     }

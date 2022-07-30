@@ -16,6 +16,8 @@ import "./interfaces/IRuntimeUpgrade.sol";
 import "./interfaces/IStakingPool.sol";
 import "./interfaces/IInjectorContextHolder.sol";
 import "./interfaces/IDeployerProxy.sol";
+import "./interfaces/IReward.sol";
+import "./interfaces/IReserve.sol";
 
 abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorContextHolder {
 
@@ -41,10 +43,15 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
     // reserved (2 for init and initializer)
     uint256[_LAYOUT_OFFSET - _SKIP_OFFSET - 2] private __reserved;
 
+    // custom smart contracts
+    IReward internal immutable _REWARD_CONTRACT;
+    IReserve internal immutable _RESERVE_CONTRACT;
+
     error OnlyCoinbase(address coinbase);
     error OnlySlashingIndicator();
     error OnlyGovernance();
     error OnlyBlock(uint64 blockNumber);
+    error OnlyReward();
 
     constructor(
         IStaking stakingContract,
@@ -54,7 +61,9 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract
+        IDeployerProxy deployerProxyContract,
+        IReward rewardContract,
+        IReserve reserveContract
     ) {
         _STAKING_CONTRACT = stakingContract;
         _SLASHING_INDICATOR_CONTRACT = slashingIndicatorContract;
@@ -64,6 +73,8 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
         _CHAIN_CONFIG_CONTRACT = chainConfigContract;
         _RUNTIME_UPGRADE_CONTRACT = runtimeUpgradeContract;
         _DEPLOYER_PROXY_CONTRACT = deployerProxyContract;
+        _REWARD_CONTRACT = rewardContract;
+        _RESERVE_CONTRACT = reserveContract;
     }
 
     function useDelayedInitializer(bytes memory delayedInitializer) external onlyBlock(0) {
@@ -99,6 +110,11 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
 
     modifier onlyBlock(uint64 blockNumber) virtual {
         if (block.number != blockNumber) revert OnlyBlock(blockNumber);
+        _;
+    }
+
+    modifier onlyFromReward() virtual {
+        if (IReward(msg.sender) != _REWARD_CONTRACT) revert OnlyReward();
         _;
     }
 }

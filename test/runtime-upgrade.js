@@ -13,7 +13,7 @@ const FakeStakingWithMethod = artifacts.require('FakeStakingWithMethod');
 contract("RuntimeUpgrade", async (accounts) => {
   const [owner, validator1, validator2] = accounts
   const injectorBytecode = (systemSmartContracts, {bytecode}) => {
-    const injectorArgs = AbiCoder.encodeParameters(['address', 'address', 'address', 'address', 'address', 'address', 'address', 'address',], systemSmartContracts)
+    const injectorArgs = AbiCoder.encodeParameters(['address', 'address', 'address', 'address', 'address', 'address', 'address', 'address', 'address', 'address',], systemSmartContracts)
     return bytecode + injectorArgs.substr(2)
   }
   it("its possible to upgrade smart contract", async () => {

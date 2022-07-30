@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.0;
 
-import "../DeployerProxy.sol";
+import "./InjectorContextHolder.sol";
 
-contract FakeDeployerProxy is DeployerProxy {
+contract Reserve is IReserve, InjectorContextHolder {
+
+    event Released(address indexed addr, uint256 amount);
 
     constructor(
         IStaking stakingContract,
@@ -16,7 +18,7 @@ contract FakeDeployerProxy is DeployerProxy {
         IDeployerProxy deployerProxyContract,
         IReward rewardContract,
         IReserve reserveContract
-    ) DeployerProxy(
+    ) InjectorContextHolder(
         stakingContract,
         slashingIndicatorContract,
         systemRewardContract,
@@ -30,23 +32,11 @@ contract FakeDeployerProxy is DeployerProxy {
     ) {
     }
 
-    modifier onlyFromCoinbase() override {
-        _;
+    function initialize() external initializer {
     }
 
-    modifier onlyFromSlashingIndicator() override {
-        _;
-    }
-
-    modifier onlyFromGovernance() override {
-        _;
-    }
-
-    modifier onlyBlock(uint64 /*blockNumber*/) override {
-        _;
-    }
-
-    modifier onlyFromReward() override {
-        _;
+    function release(address addr, uint256 amount) external onlyFromReward {
+        payable(address(addr)).transfer(amount);
+        emit Released(addr, amount);
     }
 }

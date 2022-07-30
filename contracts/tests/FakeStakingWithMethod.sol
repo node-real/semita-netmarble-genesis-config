@@ -13,7 +13,9 @@ contract FakeStakingWithMethod is Staking {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract
+        IDeployerProxy deployerProxyContract,
+        IReward rewardContract,
+        IReserve reserveContract
     ) Staking(
         stakingContract,
         slashingIndicatorContract,
@@ -22,7 +24,9 @@ contract FakeStakingWithMethod is Staking {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract
+        deployerProxyContract,
+        rewardContract,
+        reserveContract
     ) {
     }
 
@@ -43,6 +47,10 @@ contract FakeStakingWithMethod is Staking {
     }
 
     modifier onlyBlock(uint64 /*blockNumber*/) override {
+        _;
+    }
+
+    modifier onlyFromReward() override {
         _;
     }
 }

@@ -13,6 +13,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     event UndelegatePeriodChanged(uint32 prevValue, uint32 newValue);
     event MinValidatorStakeAmountChanged(uint256 prevValue, uint256 newValue);
     event MinStakingAmountChanged(uint256 prevValue, uint256 newValue);
+    event EnableDelegateChanged(bool preValue, bool newValue);
 
     struct ConsensusParams {
         uint32 activeValidatorsLength;
@@ -26,6 +27,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     }
 
     ConsensusParams private _consensusParams;
+    bool private enableDelegate;
 
     constructor(
         IStaking stakingContract,
@@ -35,7 +37,9 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract
+        IDeployerProxy deployerProxyContract,
+        IReward rewardContract,
+        IReserve reserveContract
     ) InjectorContextHolder(
         stakingContract,
         slashingIndicatorContract,
@@ -44,7 +48,9 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract
+        deployerProxyContract,
+        rewardContract,
+        reserveContract
     ) {
     }
 
@@ -154,5 +160,15 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         uint256 prevValue = _consensusParams.minStakingAmount;
         _consensusParams.minStakingAmount = newValue;
         emit MinStakingAmountChanged(prevValue, newValue);
+    }
+
+    function getEnableDelegate() external view returns (bool) {
+        return enableDelegate;
+    }
+
+    function setEnableDelegate(bool newValue) external override onlyFromGovernance {
+        bool prevValue = enableDelegate;
+        enableDelegate = newValue;
+        emit EnableDelegateChanged(prevValue, newValue);
     }
 }

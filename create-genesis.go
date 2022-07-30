@@ -4,9 +4,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/common/systemcontract"
-	"github.com/ethereum/go-ethereum/crypto"
 	"io/fs"
 	"io/ioutil"
 	"math/big"
@@ -15,6 +12,10 @@ import (
 	"strings"
 	"unicode"
 	"unsafe"
+
+	"github.com/ethereum/go-ethereum/common/math"
+	"github.com/ethereum/go-ethereum/common/systemcontract"
+	"github.com/ethereum/go-ethereum/crypto"
 
 	_ "github.com/ethereum/go-ethereum/eth/tracers/native"
 
@@ -90,6 +91,8 @@ var governanceAddress = common.HexToAddress("0x000000000000000000000000000000000
 var chainConfigAddress = common.HexToAddress("0x0000000000000000000000000000000000007003")
 var runtimeUpgradeAddress = common.HexToAddress("0x0000000000000000000000000000000000007004")
 var deployerProxyAddress = common.HexToAddress("0x0000000000000000000000000000000000007005")
+var rewardAddress = common.HexToAddress("0x0000000000000000000000000000000010000000")
+var reserveAddress = common.HexToAddress("0x0000000000000000000000000000000010000001")
 var intermediarySystemAddress = common.HexToAddress("0xfffffffffffffffffffffffffffffffffffffffe")
 
 //go:embed build/contracts/RuntimeProxy.json
@@ -119,6 +122,12 @@ var runtimeUpgradeRawArtifact []byte
 //go:embed build/contracts/DeployerProxy.json
 var deployerProxyRawArtifact []byte
 
+//go:embed build/contracts/Reward.json
+var rewardRawArtifact []byte
+
+//go:embed build/contracts/Reserve.json
+var reserveRawArtifact []byte
+
 func newArguments(typeNames ...string) abi.Arguments {
 	var args abi.Arguments
 	for i, tn := range typeNames {
@@ -140,6 +149,7 @@ type consensusParams struct {
 	UndelegatePeriod         uint32                `json:"undelegatePeriod"`
 	MinValidatorStakeAmount  *math.HexOrDecimal256 `json:"minValidatorStakeAmount"`
 	MinStakingAmount         *math.HexOrDecimal256 `json:"minStakingAmount"`
+	ReserveAmount            *math.HexOrDecimal256 `json:"reserveAmount"`
 }
 
 type genesisConfig struct {
@@ -156,6 +166,7 @@ type genesisConfig struct {
 	Faucet          map[common.Address]string `json:"faucet"`
 	CommissionRate  int64                     `json:"commissionRate"`
 	InitialStakes   map[common.Address]string `json:"initialStakes"`
+	RewardOwner     common.Address            `json:"rewardOwner"`
 }
 
 func traceCallError(deployedBytecode []byte) {
@@ -191,8 +202,8 @@ func createInitializer(typeNames []string, params []interface{}) []byte {
 
 func createSimpleBytecode(rawArtifact []byte) []byte {
 	constructorArgs, err := newArguments(
-		"address", "address", "address", "address", "address", "address", "address", "address").Pack(
-		stakingAddress, slashingIndicatorAddress, systemRewardAddress, stakingPoolAddress, governanceAddress, chainConfigAddress, runtimeUpgradeAddress, deployerProxyAddress)
+		"address", "address", "address", "address", "address", "address", "address", "address", "address", "address").Pack(
+		stakingAddress, slashingIndicatorAddress, systemRewardAddress, stakingPoolAddress, governanceAddress, chainConfigAddress, runtimeUpgradeAddress, deployerProxyAddress, rewardAddress, reserveAddress)
 	if err != nil {
 		panic(err)
 	}
@@ -201,8 +212,8 @@ func createSimpleBytecode(rawArtifact []byte) []byte {
 
 func createProxyBytecodeWithConstructor(rawArtifact []byte, initTypes []string, initArgs []interface{}) []byte {
 	constructorArgs, err := newArguments(
-		"address", "address", "address", "address", "address", "address", "address", "address").Pack(
-		stakingAddress, slashingIndicatorAddress, systemRewardAddress, stakingPoolAddress, governanceAddress, chainConfigAddress, runtimeUpgradeAddress, deployerProxyAddress)
+		"address", "address", "address", "address", "address", "address", "address", "address", "address", "address").Pack(
+		stakingAddress, slashingIndicatorAddress, systemRewardAddress, stakingPoolAddress, governanceAddress, chainConfigAddress, runtimeUpgradeAddress, deployerProxyAddress, rewardAddress, reserveAddress)
 	if err != nil {
 		panic(err)
 	}
@@ -331,6 +342,8 @@ func createGenesisConfig(config genesisConfig, targetFile string) error {
 	invokeConstructorOrPanic(genesis, deployerProxyAddress, deployerProxyRawArtifact, []string{"address[]"}, []interface{}{
 		config.Deployers,
 	}, nil)
+	invokeConstructorOrPanic(genesis, rewardAddress, rewardRawArtifact, []string{"address"}, []interface{}{config.RewardOwner}, nil)
+	invokeConstructorOrPanic(genesis, reserveAddress, reserveRawArtifact, []string{}, []interface{}{}, (*big.Int)(config.ConsensusParams.ReserveAmount))
 	// create system contract
 	genesis.Alloc[intermediarySystemAddress] = core.GenesisAccount{
 		Balance: big.NewInt(0),
@@ -418,8 +431,9 @@ var localNetConfig = genesisConfig{
 		FelonyThreshold:          100,
 		ValidatorJailEpochLength: 1,
 		UndelegatePeriod:         0,
-		MinValidatorStakeAmount:  (*math.HexOrDecimal256)(hexutil.MustDecodeBig("0xde0b6b3a7640000")), // 1 ether
-		MinStakingAmount:         (*math.HexOrDecimal256)(hexutil.MustDecodeBig("0xde0b6b3a7640000")), // 1 ether
+		MinValidatorStakeAmount:  (*math.HexOrDecimal256)(hexutil.MustDecodeBig("0xde0b6b3a7640000")),      // 1 ether
+		MinStakingAmount:         (*math.HexOrDecimal256)(hexutil.MustDecodeBig("0xde0b6b3a7640000")),      // 1 ether
+		ReserveAmount:            (*math.HexOrDecimal256)(hexutil.MustDecodeBig("0xd3c21bcecceda1000000")), // 1000000 eth
 	},
 	InitialStakes: map[common.Address]string{
 		common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"): "0x3635c9adc5dea00000", // 1000 eth
@@ -432,6 +446,7 @@ var localNetConfig = genesisConfig{
 		common.HexToAddress("0x57BA24bE2cF17400f37dB3566e839bfA6A2d018a"): "0x21e19e0c9bab2400000",
 		common.HexToAddress("0xEbCf9D06cf9333706E61213F17A795B2F7c55F1b"): "0x21e19e0c9bab2400000",
 	},
+	RewardOwner: common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
 }
 
 var devNetConfig = genesisConfig{
@@ -457,8 +472,9 @@ var devNetConfig = genesisConfig{
 		ValidatorJailEpochLength: 7,    // how many epochs validator should stay in jail (7 epochs = ~7 days)
 		UndelegatePeriod:         6,    // allow claiming funds only after 6 epochs (~7 days)
 
-		MinValidatorStakeAmount: (*math.HexOrDecimal256)(hexutil.MustDecodeBig("0xde0b6b3a7640000")), // how many tokens validator must stake to create a validator (in ether)
-		MinStakingAmount:        (*math.HexOrDecimal256)(hexutil.MustDecodeBig("0xde0b6b3a7640000")), // minimum staking amount for delegators (in ether)
+		MinValidatorStakeAmount: (*math.HexOrDecimal256)(hexutil.MustDecodeBig("0xde0b6b3a7640000")),      // how many tokens validator must stake to create a validator (in ether)
+		MinStakingAmount:        (*math.HexOrDecimal256)(hexutil.MustDecodeBig("0xde0b6b3a7640000")),      // minimum staking amount for delegators (in ether)
+		ReserveAmount:           (*math.HexOrDecimal256)(hexutil.MustDecodeBig("0xd3c21bcecceda1000000")), // 1000000 eth
 	},
 	InitialStakes: map[common.Address]string{
 		common.HexToAddress("0x08fae3885e299c24ff9841478eb946f41023ac69"): "0x3635c9adc5dea00000", // 1000 eth
@@ -474,6 +490,7 @@ var devNetConfig = genesisConfig{
 		common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"): "0x21e19e0c9bab2400000",    // governance
 		common.HexToAddress("0xb891fe7b38f857f53a7b5529204c58d5c487280b"): "0x52b7d2dcc80cd2e4000000", // faucet (10kk)
 	},
+	RewardOwner: common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
 }
 
 func main() {
