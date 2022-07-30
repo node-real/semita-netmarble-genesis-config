@@ -13,7 +13,12 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     event UndelegatePeriodChanged(uint32 prevValue, uint32 newValue);
     event MinValidatorStakeAmountChanged(uint256 prevValue, uint256 newValue);
     event MinStakingAmountChanged(uint256 prevValue, uint256 newValue);
+    event FreeGasAddressAdded(address freeGasAddress);
+    event FreeGasAddressRemoved(address freeGasAddress);
+    event FreeGasAddressSizeChanged(uint32 prevValue, uint32 newValue);
+    event FreeGasAddressAdminChanged(address oldFreeGasAddressAdmin, address newFreeGasAddressAdmin);
     event EnableDelegateChanged(bool preValue, bool newValue);
+
 
     struct ConsensusParams {
         uint32 activeValidatorsLength;
@@ -28,6 +33,11 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
 
     ConsensusParams private _consensusParams;
     bool private enableDelegate;
+
+    address public freeGasAddressAdmin;
+    uint32 public freeGasAddressSize;
+    address[] private _freeGasAddressList;
+    mapping(address => uint256) private _freeGasAddressMap;
 
     constructor(
         IStaking stakingContract,
@@ -80,6 +90,8 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         emit MinValidatorStakeAmountChanged(0, minValidatorStakeAmount);
         _consensusParams.minStakingAmount = minStakingAmount;
         emit MinStakingAmountChanged(0, minStakingAmount);
+        freeGasAddressSize = 100;
+        emit FreeGasAddressSizeChanged(0, 100);
     }
 
     function getActiveValidatorsLength() external view override returns (uint32) {
@@ -161,6 +173,71 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         _consensusParams.minStakingAmount = newValue;
         emit MinStakingAmountChanged(prevValue, newValue);
     }
+
+
+    function setFreeGasAddressAdmin(address freeGasAddressAdminAddress) external onlyFromGovernance virtual override  {
+        _setFreeGasAddressAdmin(freeGasAddressAdminAddress);
+    }
+
+    function _setFreeGasAddressAdmin(address freeGasAddressAdminAddress) internal {
+        require(freeGasAddressAdminAddress != freeGasAddressAdmin, "The admin already exist!");
+        address temp = freeGasAddressAdmin;
+        freeGasAddressAdmin = freeGasAddressAdminAddress;
+        emit FreeGasAddressAdminChanged(temp, freeGasAddressAdmin);
+    }
+
+    function setFreeGasAddressSize(uint32 newFreeGasAddressSize) external onlyFromGovernance virtual override  {
+        _setFreeGasAddressSize(newFreeGasAddressSize);
+    }
+
+    function _setFreeGasAddressSize(uint32 newFreeGasAddressSize) internal {
+        require(freeGasAddressSize != newFreeGasAddressSize, "The newFreeGasAddressSize is same with before!");
+        freeGasAddressSize = newFreeGasAddressSize;
+        emit FreeGasAddressSizeChanged(freeGasAddressSize, newFreeGasAddressSize);
+    }
+
+    function addFreeGasAddress(address freeGasAddress) external onlyFromFreeGasAddressAdmin virtual override {
+        _addFreeGasAddress(freeGasAddress);
+    }
+
+    function _addFreeGasAddress(address freeGasAddress) internal {
+        require(_freeGasAddressList.length < freeGasAddressSize, "The freeGasAddressList size reached the limit!");
+        require(_freeGasAddressMap[freeGasAddress] == 0, "The address already exist!");
+        _freeGasAddressList.push(freeGasAddress);
+        _freeGasAddressMap[freeGasAddress] = _freeGasAddressList.length;
+        emit FreeGasAddressAdded(freeGasAddress);
+    }
+
+    function removeFreeGasAddress(address freeGasAddress) external onlyFromFreeGasAddressAdmin virtual override {
+        _removeFreeGasAddress(freeGasAddress);
+    }
+
+    function _removeFreeGasAddress(address freeGasAddress) internal {
+        uint256 indexOf = _freeGasAddressMap[freeGasAddress] - 1;
+        // remove freeGasAddress
+        if (indexOf >= 0) {
+            if (_freeGasAddressList.length > 1 && indexOf != _freeGasAddressList.length - 1) {
+                address lastAddress =  _freeGasAddressList[_freeGasAddressList.length - 1];
+                _freeGasAddressList[indexOf] = lastAddress;
+                _freeGasAddressMap[lastAddress] = indexOf + 1;
+            }
+            _freeGasAddressList.pop();
+            delete _freeGasAddressMap[freeGasAddress];
+            emit FreeGasAddressRemoved(freeGasAddress);
+        }
+    }
+
+    function getFreeGasAddressList() external view returns (address[] memory) {
+        return _freeGasAddressList;
+    }
+
+    function isFreeGasAddress(address freeGasAddress) external view returns (bool) {
+        return _freeGasAddressMap[freeGasAddress] != 0;
+    }
+
+    modifier onlyFromFreeGasAddressAdmin() virtual {
+        require(msg.sender == freeGasAddressAdmin, "change freeGasAddressList: only admin");
+        _;
 
     function getEnableDelegate() external view returns (bool) {
         return enableDelegate;

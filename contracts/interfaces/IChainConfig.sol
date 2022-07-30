@@ -35,6 +35,17 @@ interface IChainConfig {
 
     function setMinStakingAmount(uint256 newValue) external;
 
+    function setFreeGasAddressAdmin(address freeGasAddressAdminAddress) external;
+
+    function setFreeGasAddressSize(uint32 newFreeGasAddressSize) external;
+
+    function addFreeGasAddress(address freeGasAddress) external;
+
+    function removeFreeGasAddress(address freeGasAddress) external;
+
+    function getFreeGasAddressList() external view returns (address[] memory);
+
+    function isFreeGasAddress(address freeGasAddress) external view returns (bool);
     function getEnableDelegate() external view returns (bool);
 
     function setEnableDelegate(bool newValue) external;
