@@ -47,6 +47,8 @@ contract FakeChainConfig is ChainConfig {
     }
 
     modifier onlyFromFreeGasAddressAdmin() override {
+        _;
+    }
     modifier onlyFromReward() override {
         _;
     }
