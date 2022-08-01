@@ -49,4 +49,7 @@ contract FakeReserve is Reserve {
     modifier onlyFromReward() override {
         _;
     }
+
+    receive() external payable {
+    }
 }
