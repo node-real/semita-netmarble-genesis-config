@@ -103,8 +103,9 @@ contract Reward is IReward, InjectorContextHolder {
     }
 
     function burn() external {
-        uint256 burned = address(this).balance * burnRatio / RATIO_SCALE;
-        uint256 unburned = address(this).balance - burned;
+        uint256 balance = address(this).balance;
+        uint256 burned = balance * burnRatio / RATIO_SCALE;
+        uint256 unburned = balance - burned;
         uint256 released = burned * releaseRatio / RATIO_SCALE;
 
         if (address(_RESERVE_CONTRACT).balance >= released) {
@@ -113,9 +114,8 @@ contract Reward is IReward, InjectorContextHolder {
             _RESERVE_CONTRACT.release(foundationAddress, released);
             emit BurnedAndReserveReleased(burned, foundationAddress, unburned + released);
         } else {
-            payable(deadAddress).transfer(burned-released);
-            payable(foundationAddress).transfer(unburned+released);
-            emit BurnedAndReserveReleased(burned-released, foundationAddress, unburned + released);
+            payable(foundationAddress).transfer(balance);
+            emit BurnedAndReserveReleased(0, foundationAddress, balance);
         }
     }
 

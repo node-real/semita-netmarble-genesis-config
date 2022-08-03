@@ -43,11 +43,11 @@ contract("Reward", async (accounts) => {
         // assert.equal(await web3.eth.getBalance(reserve.address), 10000000000000000000)
 
         let res = await reward.burn({from: owner})
-        assert.equal(res.logs[0].args.amount.toString(), '2500000000000000000');
+        assert.equal(res.logs[0].args.amount.toString(), '0');
         assert.equal(res.logs[0].args.to, release2);
-        assert.equal(res.logs[0].args.releaseAmount.toString(), '7500000000000000000');
+        assert.equal(res.logs[0].args.releaseAmount.toString(), '10000000000000000000');
         assert.equal(await web3.eth.getBalance(reward.address), '0')
-        assert.equal(await web3.eth.getBalance('0x000000000000000000000000000000000000dEaD'), 7500000000000000000)
+        assert.equal(await web3.eth.getBalance('0x000000000000000000000000000000000000dEaD'), 5000000000000000000)
     });
 
 });
