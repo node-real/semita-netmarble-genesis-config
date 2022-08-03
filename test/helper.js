@@ -41,6 +41,11 @@ const DEFAULT_MOCK_PARAMS = {
   genesisValidators: [],
   genesisDeployers: [],
   votingPeriod: '2',
+  freeGasAddressAdmin: '0x0000000000000000000000000000000000000000',
+  rewardOwnerAddress: '0x0000000000000000000000000000000000000000',
+  foundationAddress: '0x0000000000000000000000000000000000000000',
+  burnRatio: '5000',
+  releaseRatio: '5000',
 };
 
 const DEFAULT_CONTRACT_TYPES = {
@@ -88,6 +93,11 @@ const newContractUsingTypes = async (owner, params, types = {}) => {
     minStakingAmount,
     votingPeriod,
     genesisDeployers,
+    freeGasAddressAdmin,
+    rewardOwnerAddress,
+    foundationAddress,
+    burnRatio,
+    releaseRatio,
   } = Object.assign({}, DEFAULT_MOCK_PARAMS, params)
   // convert single param to the object
   if (typeof systemTreasury === 'string') {
@@ -112,10 +122,10 @@ const newContractUsingTypes = async (owner, params, types = {}) => {
   const systemReward = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(SystemReward), encodeABI(['address[]', 'uint16[]'], [Object.keys(systemTreasury), Object.values(systemTreasury)]), {from: owner});
   const stakingPool = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(StakingPool), encodeABI([], []), {from: owner});
   const governance = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(Governance), encodeABI(['uint256', 'string'], [votingPeriod, 'Governance']), {from: owner});
-  const chainConfig = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(ChainConfig), encodeABI(['uint32', 'uint32', 'uint32', 'uint32', 'uint32', 'uint32', 'uint256', 'uint256'], [activeValidatorsLength, epochBlockInterval, misdemeanorThreshold, felonyThreshold, validatorJailEpochLength, undelegatePeriod, minValidatorStakeAmount, minStakingAmount]), {from: owner});
+  const chainConfig = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(ChainConfig), encodeABI(['uint32', 'uint32', 'uint32', 'uint32', 'uint32', 'uint32', 'uint256', 'uint256', 'address'], [activeValidatorsLength, epochBlockInterval, misdemeanorThreshold, felonyThreshold, validatorJailEpochLength, undelegatePeriod, minValidatorStakeAmount, minStakingAmount, freeGasAddressAdmin]), {from: owner});
   const runtimeUpgrade = await RuntimeUpgrade.new(...systemAddresses, {from: owner});
   const deployerProxy = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(DeployerProxy), encodeABI(['address[]'], [genesisDeployers]), {from: owner});
-  const reward = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(Reward), encodeABI(['address'], [owner]), {from: owner});
+  const reward = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(Reward), encodeABI(['address', 'address', 'uint16', 'uint16'], [rewardOwnerAddress, foundationAddress, burnRatio, releaseRatio]), {from: owner});
   const reserve = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(Reserve), encodeABI([], []), {from: owner});
   // make sure runtime upgrade address is correct
   if (runtimeUpgrade.address.toLowerCase() !== runtimeUpgradeAddress.toLowerCase()) {
