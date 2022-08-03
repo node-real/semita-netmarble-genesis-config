@@ -107,7 +107,7 @@ contract Reward is IReward, InjectorContextHolder {
         uint256 unburned = address(this).balance - burned;
         uint256 released = burned * releaseRatio / RATIO_SCALE;
 
-        if (address(_RESERVE_CONTRACT).balance > released) {
+        if (address(_RESERVE_CONTRACT).balance >= released) {
             payable(deadAddress).transfer(burned);
             payable(foundationAddress).transfer(unburned);
             _RESERVE_CONTRACT.release(foundationAddress, released);
