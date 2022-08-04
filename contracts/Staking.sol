@@ -260,7 +260,6 @@ contract Staking is InjectorContextHolder, IStaking {
     }
 
     function undelegate(address validatorAddress, uint256 amount) external override {
-        require(_CHAIN_CONFIG_CONTRACT.getEnableDelegate(), "delegate should enabled");
         _undelegateFrom(msg.sender, validatorAddress, amount);
     }
 
