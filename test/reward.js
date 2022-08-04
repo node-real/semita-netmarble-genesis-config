@@ -49,5 +49,33 @@ contract("Reward", async (accounts) => {
         assert.equal(await web3.eth.getBalance(reward.address), '0')
         assert.equal(await web3.eth.getBalance('0x000000000000000000000000000000000000dEaD'), 5000000000000000000)
     });
+    it("set owner", async () => {
+        const {reward} = await newMockContract(owner, {'rewardOwnerAddress': release1, 'foundationAddress': release2});
+
+        assert.equal(await reward.getOwner({from: owner}), release1);
+        await reward.updateOwner(release2, {from:release1})
+        assert.equal(await reward.getOwner({from: owner}), release2);
+    });
+    it("set foundationAddress", async () => {
+        const {reward} = await newMockContract(owner, {'rewardOwnerAddress': release1, 'foundationAddress': release2});
+
+        assert.equal(await reward.getFoundationAddress({from: owner}), release2);
+        await reward.updateFoundationAddress(release1, {from:release1})
+        assert.equal(await reward.getFoundationAddress({from: owner}), release1);
+    });
+    it("set burn ratio", async () => {
+        const {reward} = await newMockContract(owner, {'rewardOwnerAddress': release1, 'foundationAddress': release2});
+
+        assert.equal(await reward.getBurnRatio({from: owner}), 5000);
+        await reward.updateBurnRatio(10000, {from:release1})
+        assert.equal(await reward.getBurnRatio({from: owner}), 10000);
+    });
+    it("set release ratio", async () => {
+        const {reward} = await newMockContract(owner, {'rewardOwnerAddress': release1, 'foundationAddress': release2});
+
+        assert.equal(await reward.getReleaseRatio({from: owner}), 5000);
+        await reward.updateReleaseRatio(10000, {from:release1})
+        assert.equal(await reward.getReleaseRatio({from: owner}), 10000);
+    })
 
 });
