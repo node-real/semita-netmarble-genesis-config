@@ -167,6 +167,9 @@ type genesisConfig struct {
 	CommissionRate      int64                     `json:"commissionRate"`
 	InitialStakes       map[common.Address]string `json:"initialStakes"`
 	RewardOwner         common.Address            `json:"rewardOwner"`
+	FoundationAddress   common.Address            `json:"foundationAddress"`
+	BurnRatio           int                       `json:"burnRatio"`
+	ReleaseRatio        int                       `json:"releaseRatio"`
 	FreeGasAddressAdmin common.Address            `json:"freeGasAddressAdmin"`
 }
 
@@ -454,6 +457,9 @@ var localNetConfig = genesisConfig{
 		common.HexToAddress("0x108e96C530cD6FC316231A9D1E2CD8F6b10de425"): "0x21e19e0c9bab2400000",
 	},
 	RewardOwner:         common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
+	FoundationAddress:   common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
+	BurnRatio:           5000,
+	ReleaseRatio:        5000,
 	FreeGasAddressAdmin: common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
 }
 
@@ -499,6 +505,9 @@ var devNetConfig = genesisConfig{
 		common.HexToAddress("0xb891fe7b38f857f53a7b5529204c58d5c487280b"): "0x52b7d2dcc80cd2e4000000", // faucet (10kk)
 	},
 	RewardOwner:         common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
+	FoundationAddress:   common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
+	BurnRatio:           5000,
+	ReleaseRatio:        5000,
 	FreeGasAddressAdmin: common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
 }
 
