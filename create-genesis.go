@@ -168,8 +168,8 @@ type genesisConfig struct {
 	InitialStakes       map[common.Address]string `json:"initialStakes"`
 	RewardOwner         common.Address            `json:"rewardOwner"`
 	FoundationAddress   common.Address            `json:"foundationAddress"`
-	BurnRatio           int                       `json:"burnRatio"`
-	ReleaseRatio        int                       `json:"releaseRatio"`
+	BurnRatio           uint16                    `json:"burnRatio"`
+	ReleaseRatio        uint16                    `json:"releaseRatio"`
 	FreeGasAddressAdmin common.Address            `json:"freeGasAddressAdmin"`
 }
 
@@ -347,7 +347,7 @@ func createGenesisConfig(config genesisConfig, targetFile string) error {
 	invokeConstructorOrPanic(genesis, deployerProxyAddress, deployerProxyRawArtifact, []string{"address[]"}, []interface{}{
 		config.Deployers,
 	}, nil)
-	invokeConstructorOrPanic(genesis, rewardAddress, rewardRawArtifact, []string{"address"}, []interface{}{config.RewardOwner}, nil)
+	invokeConstructorOrPanic(genesis, rewardAddress, rewardRawArtifact, []string{"address", "address", "uint16", "uint16"}, []interface{}{config.RewardOwner, config.FoundationAddress, config.BurnRatio, config.ReleaseRatio}, nil)
 	invokeConstructorOrPanic(genesis, reserveAddress, reserveRawArtifact, []string{}, []interface{}{}, (*big.Int)(config.ConsensusParams.ReserveAmount))
 	// create system contract
 	genesis.Alloc[intermediarySystemAddress] = core.GenesisAccount{
