@@ -119,7 +119,7 @@ contract Reward is IReward, InjectorContextHolder {
         }
     }
 
-    receive() external payable onlyFromCoinbase {
+    receive() external payable onlyFromStaking {
         emit Rewarded(msg.sender, msg.value);
     }
 }

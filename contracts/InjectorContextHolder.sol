@@ -48,6 +48,7 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
     IReserve internal immutable _RESERVE_CONTRACT;
 
     error OnlyCoinbase(address coinbase);
+    error OnlyStaking();
     error OnlySlashingIndicator();
     error OnlyGovernance();
     error OnlyBlock(uint64 blockNumber);
@@ -95,6 +96,11 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
 
     modifier onlyFromCoinbase() virtual {
         if (msg.sender != block.coinbase) revert OnlyCoinbase(block.coinbase);
+        _;
+    }
+
+    modifier onlyFromStaking() virtual {
+        if (IStaking(msg.sender) != _STAKING_CONTRACT) revert OnlyStaking();
         _;
     }
 
