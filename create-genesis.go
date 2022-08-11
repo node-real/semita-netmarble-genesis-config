@@ -167,6 +167,7 @@ type genesisConfig struct {
 	CommissionRate      int64                     `json:"commissionRate"`
 	InitialStakes       map[common.Address]string `json:"initialStakes"`
 	RewardOwner         common.Address            `json:"rewardOwner"`
+	TimeLockDelay       *big.Int                  `json:"timeLockDelay"`
 	FoundationAddress   common.Address            `json:"foundationAddress"`
 	BurnRatio           uint16                    `json:"burnRatio"`
 	ReleaseRatio        uint16                    `json:"releaseRatio"`
@@ -347,7 +348,7 @@ func createGenesisConfig(config genesisConfig, targetFile string) error {
 	invokeConstructorOrPanic(genesis, deployerProxyAddress, deployerProxyRawArtifact, []string{"address[]"}, []interface{}{
 		config.Deployers,
 	}, nil)
-	invokeConstructorOrPanic(genesis, rewardAddress, rewardRawArtifact, []string{"address", "address", "uint16", "uint16"}, []interface{}{config.RewardOwner, config.FoundationAddress, config.BurnRatio, config.ReleaseRatio}, nil)
+	invokeConstructorOrPanic(genesis, rewardAddress, rewardRawArtifact, []string{"address", "uint256", "address", "uint16", "uint16"}, []interface{}{config.RewardOwner, config.TimeLockDelay, config.FoundationAddress, config.BurnRatio, config.ReleaseRatio}, nil)
 	invokeConstructorOrPanic(genesis, reserveAddress, reserveRawArtifact, []string{}, []interface{}{}, (*big.Int)(config.ConsensusParams.ReserveAmount))
 	// create system contract
 	genesis.Alloc[intermediarySystemAddress] = core.GenesisAccount{
@@ -457,6 +458,7 @@ var localNetConfig = genesisConfig{
 		common.HexToAddress("0x108e96C530cD6FC316231A9D1E2CD8F6b10de425"): "0x21e19e0c9bab2400000",
 	},
 	RewardOwner:         common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
+	TimeLockDelay:       big.NewInt(21600),
 	FoundationAddress:   common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
 	BurnRatio:           5000,
 	ReleaseRatio:        5000,
@@ -505,6 +507,7 @@ var devNetConfig = genesisConfig{
 		common.HexToAddress("0xb891fe7b38f857f53a7b5529204c58d5c487280b"): "0x52b7d2dcc80cd2e4000000", // faucet (10kk)
 	},
 	RewardOwner:         common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
+	TimeLockDelay:       big.NewInt(21600),
 	FoundationAddress:   common.HexToAddress("0x00a601f45688dba8a070722073b015277cf36725"),
 	BurnRatio:           5000,
 	ReleaseRatio:        5000,
