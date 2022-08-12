@@ -34,6 +34,10 @@ contract FakeReward is Reward {
         _;
     }
 
+    modifier onlyFromStaking() override {
+        _;
+    }
+
     modifier onlyFromSlashingIndicator() override {
         _;
     }

@@ -43,6 +43,7 @@ const DEFAULT_MOCK_PARAMS = {
   votingPeriod: '2',
   freeGasAddressAdmin: '0x0000000000000000000000000000000000000000',
   rewardOwnerAddress: '0x0000000000000000000000000000000000000000',
+  delay: 6*60*60,
   foundationAddress: '0x0000000000000000000000000000000000000000',
   burnRatio: '5000',
   releaseRatio: '5000',
@@ -95,6 +96,7 @@ const newContractUsingTypes = async (owner, params, types = {}) => {
     genesisDeployers,
     freeGasAddressAdmin,
     rewardOwnerAddress,
+    delay,
     foundationAddress,
     burnRatio,
     releaseRatio,
@@ -125,7 +127,7 @@ const newContractUsingTypes = async (owner, params, types = {}) => {
   const chainConfig = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(ChainConfig), encodeABI(['uint32', 'uint32', 'uint32', 'uint32', 'uint32', 'uint32', 'uint256', 'uint256', 'address'], [activeValidatorsLength, epochBlockInterval, misdemeanorThreshold, felonyThreshold, validatorJailEpochLength, undelegatePeriod, minValidatorStakeAmount, minStakingAmount, freeGasAddressAdmin]), {from: owner});
   const runtimeUpgrade = await RuntimeUpgrade.new(...systemAddresses, {from: owner});
   const deployerProxy = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(DeployerProxy), encodeABI(['address[]'], [genesisDeployers]), {from: owner});
-  const reward = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(Reward), encodeABI(['address', 'address', 'uint16', 'uint16'], [rewardOwnerAddress, foundationAddress, burnRatio, releaseRatio]), {from: owner});
+  const reward = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(Reward), encodeABI(['address', 'uint256', 'address', 'uint16', 'uint16'], [rewardOwnerAddress, delay, foundationAddress, burnRatio, releaseRatio]), {from: owner});
   const reserve = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(Reserve), encodeABI([], []), {from: owner});
   // make sure runtime upgrade address is correct
   if (runtimeUpgrade.address.toLowerCase() !== runtimeUpgradeAddress.toLowerCase()) {

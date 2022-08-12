@@ -7,6 +7,11 @@
 
 const {newMockContract, expectError} = require('./helper')
 
+function sleep(delay) {
+    let start = new Date().getTime();
+    while (new Date().getTime() < start + delay);
+}
+
 contract("Reward", async (accounts) => {
     const [owner, release1, release2] = accounts;
 
@@ -49,33 +54,48 @@ contract("Reward", async (accounts) => {
         assert.equal(await web3.eth.getBalance(reward.address), '0')
         assert.equal(await web3.eth.getBalance('0x000000000000000000000000000000000000dEaD'), 5000000000000000000)
     });
-    it("set owner", async () => {
-        const {reward} = await newMockContract(owner, {'rewardOwnerAddress': release1, 'foundationAddress': release2});
 
-        assert.equal(await reward.getOwner({from: owner}), release1);
-        await reward.updateOwner(release2, {from:release1})
-        assert.equal(await reward.getOwner({from: owner}), release2);
-    });
-    it("set foundationAddress", async () => {
-        const {reward} = await newMockContract(owner, {'rewardOwnerAddress': release1, 'foundationAddress': release2});
 
-        assert.equal(await reward.getFoundationAddress({from: owner}), release2);
-        await reward.updateFoundationAddress(release1, {from:release1})
-        assert.equal(await reward.getFoundationAddress({from: owner}), release1);
-    });
-    it("set burn ratio", async () => {
-        const {reward} = await newMockContract(owner, {'rewardOwnerAddress': release1, 'foundationAddress': release2});
+    // ** NOTE ** change MINIMUM_DELAY to 0 before uncomment below test cases.
 
-        assert.equal(await reward.getBurnRatio({from: owner}), 5000);
-        await reward.updateBurnRatio(10000, {from:release1})
-        assert.equal(await reward.getBurnRatio({from: owner}), 10000);
-    });
-    it("set release ratio", async () => {
-        const {reward} = await newMockContract(owner, {'rewardOwnerAddress': release1, 'foundationAddress': release2});
-
-        assert.equal(await reward.getReleaseRatio({from: owner}), 5000);
-        await reward.updateReleaseRatio(10000, {from:release1})
-        assert.equal(await reward.getReleaseRatio({from: owner}), 10000);
-    })
+    // it.only("set foundationAddress", async () => {
+    //     const {reward} = await newMockContract(owner, {'rewardOwnerAddress': release1, 'foundationAddress': release2, 'delay': 0});
+    //
+    //     assert.equal(await reward.getFoundationAddress({from: owner}), release2);
+    //     let now = Math.floor(Date.now() / 1000);
+    //     let wait = 3;
+    //     await reward.queueUpdateFoundationAddress(release1, now+wait, {from:release1});
+    //
+    //     sleep(wait*1000);
+    //     await reward.executeUpdateFoundationAddress(release1, now+wait, {from: release1});
+    //     assert.equal(await reward.getFoundationAddress({from: owner}), release1);
+    //     expectError(reward.executeUpdateFoundationAddress(release1, now+wait, {from: release1}), "Transaction hasn't been queued");
+    // });
+    // it.only("set burn ratio", async () => {
+    //     const {reward} = await newMockContract(owner, {'rewardOwnerAddress': release1, 'foundationAddress': release2, 'delay': 0});
+    //
+    //     assert.equal(await reward.getBurnRatio({from: release1}), 5000);
+    //     let now = Math.floor(Date.now() / 1000);
+    //     let wait = 3;
+    //     await reward.queueUpdateBurnRatio(6000, now+wait, {from:release1});
+    //
+    //     sleep(wait*1000);
+    //     await reward.executeUpdateBurnRatio(6000, now+wait, {from: release1});
+    //     assert.equal(await reward.getBurnRatio({from: owner}), 6000);
+    //     expectError(reward.executeUpdateReleaseRatio(6000, now+wait, {from: release1}), "Transaction hasn't been queued");
+    // });
+    // it.only("set release ratio", async () => {
+    //     const {reward} = await newMockContract(owner, {'rewardOwnerAddress': release1, 'foundationAddress': release2, 'delay': 0});
+    //
+    //     assert.equal(await reward.getReleaseRatio({from: release1}), 5000);
+    //     let now = Math.floor(Date.now() / 1000);
+    //     let wait = 3;
+    //     await reward.queueUpdateReleaseRatio(6000, now+wait, {from:release1});
+    //
+    //     sleep(wait*1000);
+    //     await reward.executeUpdateReleaseRatio(6000, now+wait, {from: release1});
+    //     assert.equal(await reward.getReleaseRatio({from: owner}), 6000);
+    //     expectError(reward.executeUpdateReleaseRatio(6000, now+wait, {from: release1}), "Transaction hasn't been queued")
+    // })
 
 });
