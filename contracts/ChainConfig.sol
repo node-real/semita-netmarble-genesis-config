@@ -178,25 +178,26 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     }
 
 
-    function setFreeGasAddressAdmin(address freeGasAddressAdminAddress) external onlyFromGovernance virtual override  {
-        _setFreeGasAddressAdmin(freeGasAddressAdminAddress);
+    function setFreeGasAddressAdmin(address _freeGasAddressAdmin) external onlyFromGovernance virtual override  {
+        _setFreeGasAddressAdmin(_freeGasAddressAdmin);
     }
 
-    function _setFreeGasAddressAdmin(address freeGasAddressAdminAddress) internal {
-        require(freeGasAddressAdminAddress != freeGasAddressAdmin, "The admin already exist!");
+    function _setFreeGasAddressAdmin(address _freeGasAddressAdmin) internal {
+        require(_freeGasAddressAdmin != freeGasAddressAdmin, "Same admin!");
         address temp = freeGasAddressAdmin;
-        freeGasAddressAdmin = freeGasAddressAdminAddress;
+        freeGasAddressAdmin = _freeGasAddressAdmin;
         emit FreeGasAddressAdminChanged(temp, freeGasAddressAdmin);
     }
 
-    function setFreeGasAddressSize(uint32 newFreeGasAddressSize) external onlyFromGovernance virtual override  {
-        _setFreeGasAddressSize(newFreeGasAddressSize);
+    function setFreeGasAddressSize(uint32 _freeGasAddressSize) external onlyFromGovernance virtual override  {
+        _setFreeGasAddressSize(_freeGasAddressSize);
     }
 
-    function _setFreeGasAddressSize(uint32 newFreeGasAddressSize) internal {
-        require(freeGasAddressSize != newFreeGasAddressSize, "The newFreeGasAddressSize is same with before!");
-        freeGasAddressSize = newFreeGasAddressSize;
-        emit FreeGasAddressSizeChanged(freeGasAddressSize, newFreeGasAddressSize);
+    function _setFreeGasAddressSize(uint32 _freeGasAddressSize) internal {
+        require(freeGasAddressSize != _freeGasAddressSize, "Same size!");
+        uint32 temp = freeGasAddressSize;
+        freeGasAddressSize = _freeGasAddressSize;
+        emit FreeGasAddressSizeChanged(temp, _freeGasAddressSize);
     }
 
     function addFreeGasAddress(address freeGasAddress) external onlyFromFreeGasAddressAdmin virtual override {
@@ -216,9 +217,10 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     }
 
     function _removeFreeGasAddress(address freeGasAddress) internal {
-        uint256 indexOf = _freeGasAddressMap[freeGasAddress] - 1;
+        uint256 position = _freeGasAddressMap[freeGasAddress];
         // remove freeGasAddress
-        if (indexOf >= 0) {
+        if (position > 0) {
+            uint256 indexOf = position - 1;
             if (_freeGasAddressList.length > 1 && indexOf != _freeGasAddressList.length - 1) {
                 address lastAddress =  _freeGasAddressList[_freeGasAddressList.length - 1];
                 _freeGasAddressList[indexOf] = lastAddress;
@@ -232,6 +234,10 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
 
     function getFreeGasAddressList() external view returns (address[] memory) {
         return _freeGasAddressList;
+    }
+
+    function getSizeOfFreeGasAddressList() external view returns (uint256) {
+        return _freeGasAddressList.length;
     }
 
     function isFreeGasAddress(address freeGasAddress) external view returns (bool) {

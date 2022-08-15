@@ -34,6 +34,9 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
     IChainConfig internal immutable _CHAIN_CONFIG_CONTRACT;
     IRuntimeUpgrade internal immutable _RUNTIME_UPGRADE_CONTRACT;
     IDeployerProxy internal immutable _DEPLOYER_PROXY_CONTRACT;
+    // custom smart contracts
+    IReward internal immutable _REWARD_CONTRACT;
+    IReserve internal immutable _RESERVE_CONTRACT;
 
     // delayed initializer input data (only for parlia mode)
     bytes internal _delayedInitializer;
@@ -42,10 +45,6 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
     uint256[_SKIP_OFFSET] private __removed;
     // reserved (2 for init and initializer)
     uint256[_LAYOUT_OFFSET - _SKIP_OFFSET - 2] private __reserved;
-
-    // custom smart contracts
-    IReward internal immutable _REWARD_CONTRACT;
-    IReserve internal immutable _RESERVE_CONTRACT;
 
     error OnlyCoinbase(address coinbase);
     error OnlyStaking();

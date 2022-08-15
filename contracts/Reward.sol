@@ -7,9 +7,9 @@ import "./TimeLock.sol";
 contract Reward is IReward, InjectorContextHolder, TimeLock {
 
     address constant deadAddress= 0x000000000000000000000000000000000000dEaD;
-    address internal foundationAddress;
-
     uint16 constant RATIO_SCALE = 10000;
+
+    address internal foundationAddress;
     uint16 internal burnRatio;
     uint16 internal releaseRatio;
 
@@ -70,15 +70,15 @@ contract Reward is IReward, InjectorContextHolder, TimeLock {
         emit UpdateFoundationAddress(preValue, _foundationAddress);
     }
 
-    function queueUpdateFoundationAddress(address _foundationAddress, uint256 eta) external payable onlyAdmin returns (bytes32) {
+    function queueUpdateFoundationAddress(address _foundationAddress, uint256 eta) external payable returns (bytes32) {
         return queueTransaction(address(this), msg.value, "updateFoundationAddress(address)", abi.encode(_foundationAddress), eta);
     }
 
-    function cancelUpdateFoundationAddress(address _foundationAddress, uint256 eta) external payable onlyAdmin {
+    function cancelUpdateFoundationAddress(address _foundationAddress, uint256 eta) external payable {
         return cancelTransaction(address(this), msg.value, "updateFoundationAddress(address)", abi.encode(_foundationAddress), eta);
     }
 
-    function executeUpdateFoundationAddress(address _foundationAddress, uint256 eta) external payable onlyAdmin {
+    function executeUpdateFoundationAddress(address _foundationAddress, uint256 eta) external payable {
         executeTransaction(address(this), msg.value, "updateFoundationAddress(address)", abi.encode(_foundationAddress), eta);
     }
 
@@ -93,15 +93,15 @@ contract Reward is IReward, InjectorContextHolder, TimeLock {
         emit UpdateBurnRatio(preValue, _burnRatio);
     }
 
-    function queueUpdateBurnRatio(uint16 _burnRatio, uint256 eta) external payable onlyAdmin returns (bytes32) {
+    function queueUpdateBurnRatio(uint16 _burnRatio, uint256 eta) external payable returns (bytes32) {
         return queueTransaction(address(this), msg.value, "updateBurnRatio(uint16)", abi.encode(_burnRatio), eta);
     }
 
-    function cancelUpdateBurnRatio(uint16 _burnRatio, uint256 eta) external payable onlyAdmin {
+    function cancelUpdateBurnRatio(uint16 _burnRatio, uint256 eta) external payable {
         return cancelTransaction(address(this), msg.value, "updateBurnRatio(uint16)", abi.encode(_burnRatio), eta);
     }
 
-    function executeUpdateBurnRatio(uint16 _burnRatio, uint256 eta) external payable onlyAdmin {
+    function executeUpdateBurnRatio(uint16 _burnRatio, uint256 eta) external payable {
         executeTransaction(address(this), msg.value, "updateBurnRatio(uint16)", abi.encode(_burnRatio), eta);
     }
 
@@ -117,19 +117,19 @@ contract Reward is IReward, InjectorContextHolder, TimeLock {
     }
 
 
-    function queueUpdateReleaseRatio(uint16 _releaseRatio, uint256 eta) external payable onlyAdmin returns (bytes32) {
+    function queueUpdateReleaseRatio(uint16 _releaseRatio, uint256 eta) external payable returns (bytes32) {
         return queueTransaction(address(this), msg.value, "updateReleaseRatio(uint16)", abi.encode(_releaseRatio), eta);
     }
 
-    function cancelUpdateReleaseRatio(uint16 _releaseRatio, uint256 eta) external payable onlyAdmin {
+    function cancelUpdateReleaseRatio(uint16 _releaseRatio, uint256 eta) external payable {
         return cancelTransaction(address(this), msg.value, "updateReleaseRatio(uint16)", abi.encode(_releaseRatio), eta);
     }
 
-    function executeUpdateReleaseRatio(uint16 _releaseRatio, uint256 eta) external payable onlyAdmin {
+    function executeUpdateReleaseRatio(uint16 _releaseRatio, uint256 eta) external payable {
         executeTransaction(address(this), msg.value, "updateReleaseRatio(uint16)", abi.encode(_releaseRatio), eta);
     }
 
-    function burn() external {
+    function burnAndRelease() external {
         uint256 balance = address(this).balance;
         uint256 burned = balance * burnRatio / RATIO_SCALE;
         uint256 released = burned * releaseRatio / RATIO_SCALE;

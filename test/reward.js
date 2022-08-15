@@ -27,7 +27,7 @@ contract("Reward", async (accounts) => {
         await web3.eth.sendTransaction({to:reserve.address, from:owner, value:web3.utils.toWei("10", "ether")})
         assert.equal(await web3.eth.getBalance(reserve.address), 10000000000000000000)
 
-        let res = await reward.burn({from: owner})
+        let res = await reward.burnAndRelease({from: owner})
         assert.equal(res.logs[0].args.amount.toString(), '5000000000000000000');
         assert.equal(res.logs[0].args.to, release2);
         assert.equal(res.logs[0].args.releaseAmount.toString(), '7500000000000000000');
@@ -47,7 +47,7 @@ contract("Reward", async (accounts) => {
         // await web3.eth.sendTransaction({to:reserve.address, from:owner, value:web3.utils.toWei("10", "ether")})
         // assert.equal(await web3.eth.getBalance(reserve.address), 10000000000000000000)
 
-        let res = await reward.burn({from: owner})
+        let res = await reward.burnAndRelease({from: owner})
         assert.equal(res.logs[0].args.amount.toString(), '0');
         assert.equal(res.logs[0].args.to, release2);
         assert.equal(res.logs[0].args.releaseAmount.toString(), '10000000000000000000');
