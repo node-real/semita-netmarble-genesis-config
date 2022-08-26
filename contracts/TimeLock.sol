@@ -50,7 +50,7 @@ contract TimeLock is Initializable {
     address public admin;
     address public pendingAdmin;
     uint256 public delay;
-    bool public admin_initialized;
+    bool public _admin_initialized; // not used anymore
 
     mapping(bytes32 => bool) public queuedTransactions;
 
@@ -64,7 +64,6 @@ contract TimeLock is Initializable {
 
         admin = admin_;
         delay = delay_;
-        admin_initialized = false;
     }
 
     receive() external payable virtual {}
@@ -83,6 +82,18 @@ contract TimeLock is Initializable {
         emit NewDelay(delay);
     }
 
+    function queueSetDelay(uint256 delay_, uint256 eta) external payable returns (bytes32) {
+        return queueTransaction(address(this), msg.value, "setDelay(uint256)", abi.encode(delay_), eta);
+    }
+
+    function cancelSetDelay(uint256 delay_, uint256 eta) external payable {
+        return cancelTransaction(address(this), msg.value, "setDelay(uint256)", abi.encode(delay_), eta);
+    }
+
+    function executeSetDelay(uint256 delay_, uint256 eta) external payable {
+        executeTransaction(address(this), msg.value, "setDelay(uint256)", abi.encode(delay_), eta);
+    }
+
     function acceptAdmin() public {
         require(msg.sender == pendingAdmin, "Timelock::acceptAdmin: Call must come from pendingAdmin.");
         admin = msg.sender;
@@ -92,16 +103,22 @@ contract TimeLock is Initializable {
     }
 
     function setPendingAdmin(address pendingAdmin_) public {
-        // allows one time setting of admin for deployment purposes
-        if (admin_initialized) {
-            require(msg.sender == address(this), "Timelock::setPendingAdmin: Call must come from Timelock.");
-        } else {
-            require(msg.sender == admin, "Timelock::setPendingAdmin: First call must come from admin.");
-            admin_initialized = true;
-        }
+        require(msg.sender == address(this), "Timelock::setPendingAdmin: Call must come from Timelock.");
         pendingAdmin = pendingAdmin_;
 
         emit NewPendingAdmin(pendingAdmin);
+    }
+
+    function queueSetPendingAdmin(address pendingAdmin_, uint256 eta) external payable returns (bytes32) {
+        return queueTransaction(address(this), msg.value, "setPendingAdmin(address)", abi.encode(pendingAdmin_), eta);
+    }
+
+    function cancelSetPendingAdmin(address pendingAdmin_, uint256 eta) external payable {
+        return cancelTransaction(address(this), msg.value, "setPendingAdmin(address)", abi.encode(pendingAdmin_), eta);
+    }
+
+    function executeSetPendingAdmin(address pendingAdmin_, uint256 eta) external payable {
+        executeTransaction(address(this), msg.value, "setPendingAdmin(address)", abi.encode(pendingAdmin_), eta);
     }
 
     function queueTransaction(
