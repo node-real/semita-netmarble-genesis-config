@@ -37,7 +37,7 @@ const DEFAULT_MOCK_PARAMS = {
   genesisValidators: [],
   genesisDeployers: [],
   votingPeriod: '2',
-  freeGasAddressAdmin: '0x0000000000000000000000000000000000000000',
+  freeGasAddressAdmin: '0x0010000000000000000000000000000000000001',
 };
 
 const DEFAULT_CONTRACT_TYPES = {

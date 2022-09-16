@@ -88,6 +88,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         emit MinStakingAmountChanged(0, minStakingAmount);
         freeGasAddressSize = 100;
         emit FreeGasAddressSizeChanged(0, 100);
+        require(_freeGasAddressAdmin != address(0), "zero address");
         freeGasAddressAdmin = _freeGasAddressAdmin;
         emit FreeGasAddressAdminChanged(freeGasAddressAdmin, _freeGasAddressAdmin);
     }
@@ -178,6 +179,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     }
 
     function _setFreeGasAddressAdmin(address _freeGasAddressAdmin) internal {
+        require(_freeGasAddressAdmin != address(0), "zero address");
         require(_freeGasAddressAdmin != freeGasAddressAdmin, "Same admin!");
         address temp = freeGasAddressAdmin;
         freeGasAddressAdmin = _freeGasAddressAdmin;
