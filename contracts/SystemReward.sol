@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/utils/Address.sol";
+
 import "./InjectorContextHolder.sol";
 
 contract SystemReward is ISystemReward, InjectorContextHolder {
@@ -119,7 +121,7 @@ contract SystemReward is ISystemReward, InjectorContextHolder {
         // if we have system treasury then its legacy scheme
         if (_systemTreasury != address(0x00)) {
             address payable payableTreasury = payable(_systemTreasury);
-            payableTreasury.transfer(amountToPay);
+            Address.sendValue(payableTreasury, amountToPay);
             emit FeeClaimed(_systemTreasury, amountToPay);
             return;
         }
@@ -128,7 +130,7 @@ contract SystemReward is ISystemReward, InjectorContextHolder {
         for (uint256 i = 0; i < _distributionShares.length; i++) {
             DistributionShare memory ds = _distributionShares[i];
             uint256 accountFee = amountToPay * ds.share / SHARE_MAX_VALUE;
-            payable(ds.account).transfer(accountFee);
+            Address.sendValue(payable(ds.account), accountFee);
             emit FeeClaimed(ds.account, accountFee);
             totalPaid += accountFee;
         }

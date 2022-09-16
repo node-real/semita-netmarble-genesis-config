@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/utils/Address.sol";
+
 import "./interfaces/IInjectorContextHolder.sol";
 import "./interfaces/IStaking.sol";
 import "./interfaces/IStakingPool.sol";
@@ -181,7 +183,7 @@ contract StakingPool is InjectorContextHolder, IStakingPool {
         delete _pendingUnstakes[validator][msg.sender];
         // its safe to use call here (state is clear)
         require(address(this).balance >= amount, "not enough balance");
-        payable(address(msg.sender)).transfer(amount);
+        Address.sendValue(payable(msg.sender), amount);
         // emit event
         emit Claim(validator, msg.sender, amount);
     }
