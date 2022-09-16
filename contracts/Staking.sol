@@ -251,6 +251,7 @@ contract Staking is InjectorContextHolder, IStaking {
     }
 
     function delegate(address validatorAddress) payable external override {
+        require(_CHAIN_CONFIG_CONTRACT.getEnableDelegate(), "delegate should enabled");
         _delegateTo(msg.sender, validatorAddress, msg.value);
     }
 
