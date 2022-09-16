@@ -13,9 +13,7 @@ contract FakeChainConfig is ChainConfig {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract,
-        IReward rewardContract,
-        IReserve reserveContract
+        IDeployerProxy deployerProxyContract
     ) ChainConfig(
         stakingContract,
         slashingIndicatorContract,
@@ -24,9 +22,7 @@ contract FakeChainConfig is ChainConfig {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract,
-        rewardContract,
-        reserveContract
+        deployerProxyContract
     ) {
     }
 
@@ -47,9 +43,6 @@ contract FakeChainConfig is ChainConfig {
     }
 
     modifier onlyFromFreeGasAddressAdmin() override {
-        _;
-    }
-    modifier onlyFromReward() override {
         _;
     }
 }

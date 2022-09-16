@@ -17,8 +17,6 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     event FreeGasAddressRemoved(address freeGasAddress);
     event FreeGasAddressSizeChanged(uint32 prevValue, uint32 newValue);
     event FreeGasAddressAdminChanged(address oldFreeGasAddressAdmin, address newFreeGasAddressAdmin);
-    event EnableDelegateChanged(bool preValue, bool newValue);
-
 
     struct ConsensusParams {
         uint32 activeValidatorsLength;
@@ -32,7 +30,6 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     }
 
     ConsensusParams private _consensusParams;
-    bool private enableDelegate;
 
     address public freeGasAddressAdmin;
     uint32 public freeGasAddressSize;
@@ -47,9 +44,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract,
-        IReward rewardContract,
-        IReserve reserveContract
+        IDeployerProxy deployerProxyContract
     ) InjectorContextHolder(
         stakingContract,
         slashingIndicatorContract,
@@ -58,9 +53,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract,
-        rewardContract,
-        reserveContract
+        deployerProxyContract
     ) {
     }
 
@@ -247,15 +240,5 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     modifier onlyFromFreeGasAddressAdmin() virtual {
         require(msg.sender == freeGasAddressAdmin, "change freeGasAddressList: only admin");
         _;
-    }    
-
-    function getEnableDelegate() external view returns (bool) {
-        return enableDelegate;
-    }
-
-    function setEnableDelegate(bool newValue) external override onlyFromGovernance {
-        bool prevValue = enableDelegate;
-        enableDelegate = newValue;
-        emit EnableDelegateChanged(prevValue, newValue);
     }
 }

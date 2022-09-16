@@ -14,8 +14,6 @@ const StakingPool = artifacts.require("StakingPool");
 const RuntimeUpgrade = artifacts.require("RuntimeUpgrade");
 const RuntimeProxy = artifacts.require("RuntimeProxy");
 const DeployerProxy = artifacts.require("DeployerProxy");
-const Reward = artifacts.require("Reward");
-const Reserve = artifacts.require("Reserve");
 
 const FakeChainConfig = artifacts.require("FakeChainConfig");
 const FakeDeployerProxy = artifacts.require("FakeDeployerProxy");
@@ -25,8 +23,6 @@ const FakeSlashingIndicator = artifacts.require("FakeSlashingIndicator");
 const FakeStaking = artifacts.require("FakeStaking");
 const FakeStakingPool = artifacts.require("FakeStakingPool");
 const FakeSystemReward = artifacts.require("FakeSystemReward");
-const FakeReward = artifacts.require("FakeReward");
-const FakeReserve = artifacts.require("FakeReserve");
 
 const DEFAULT_MOCK_PARAMS = {
   systemTreasury: '0x0000000000000000000000000000000000000000',
@@ -42,11 +38,6 @@ const DEFAULT_MOCK_PARAMS = {
   genesisDeployers: [],
   votingPeriod: '2',
   freeGasAddressAdmin: '0x0000000000000000000000000000000000000000',
-  rewardOwnerAddress: '0x0000000000000000000000000000000000000000',
-  delay: 6*60*60,
-  foundationAddress: '0x0000000000000000000000000000000000000000',
-  burnRatio: '5000',
-  releaseRatio: '5000',
 };
 
 const DEFAULT_CONTRACT_TYPES = {
@@ -58,8 +49,6 @@ const DEFAULT_CONTRACT_TYPES = {
   StakingPool: StakingPool,
   RuntimeUpgrade: RuntimeUpgrade,
   DeployerProxy: DeployerProxy,
-  Reward: Reward,
-  Reserve: Reserve,
 };
 
 const encodeABI = (types, args) => {
@@ -78,8 +67,6 @@ const newContractUsingTypes = async (owner, params, types = {}) => {
     StakingPool,
     RuntimeUpgrade,
     DeployerProxy,
-    Reward,
-    Reserve,
   } = Object.assign({}, DEFAULT_CONTRACT_TYPES, types)
   let {
     systemTreasury,
@@ -95,11 +82,6 @@ const newContractUsingTypes = async (owner, params, types = {}) => {
     votingPeriod,
     genesisDeployers,
     freeGasAddressAdmin,
-    rewardOwnerAddress,
-    delay,
-    foundationAddress,
-    burnRatio,
-    releaseRatio,
   } = Object.assign({}, DEFAULT_MOCK_PARAMS, params)
   // convert single param to the object
   if (typeof systemTreasury === 'string') {
@@ -108,13 +90,13 @@ const newContractUsingTypes = async (owner, params, types = {}) => {
   // precompute system contract addresses
   const latestNonce = await web3.eth.getTransactionCount(owner, 'pending')
   const systemAddresses = []
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 8; i++) {
     const nonceHash = keccak256(RLP.encode([owner, latestNonce + i])).toString('hex');
     systemAddresses.push(toChecksumAddress(`0x${nonceHash.substring(24)}`));
   }
   const runtimeUpgradeAddress = systemAddresses[6];
   // encode constructor for injector
-  const injectorArgs = AbiCoder.encodeParameters(['address', 'address', 'address', 'address', 'address', 'address', 'address', 'address', 'address', 'address'], systemAddresses)
+  const injectorArgs = AbiCoder.encodeParameters(['address', 'address', 'address', 'address', 'address', 'address', 'address', 'address',], systemAddresses)
   const injectorBytecode = ({bytecode}) => {
     return bytecode + injectorArgs.substr(2)
   }
@@ -127,8 +109,6 @@ const newContractUsingTypes = async (owner, params, types = {}) => {
   const chainConfig = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(ChainConfig), encodeABI(['uint32', 'uint32', 'uint32', 'uint32', 'uint32', 'uint32', 'uint256', 'uint256', 'address'], [activeValidatorsLength, epochBlockInterval, misdemeanorThreshold, felonyThreshold, validatorJailEpochLength, undelegatePeriod, minValidatorStakeAmount, minStakingAmount, freeGasAddressAdmin]), {from: owner});
   const runtimeUpgrade = await RuntimeUpgrade.new(...systemAddresses, {from: owner});
   const deployerProxy = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(DeployerProxy), encodeABI(['address[]'], [genesisDeployers]), {from: owner});
-  const reward = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(Reward), encodeABI(['address', 'uint256', 'address', 'uint16', 'uint16'], [rewardOwnerAddress, delay, foundationAddress, burnRatio, releaseRatio]), {from: owner});
-  const reserve = await RuntimeProxy.new(runtimeUpgradeAddress, injectorBytecode(Reserve), encodeABI([], []), {from: owner});
   // make sure runtime upgrade address is correct
   if (runtimeUpgrade.address.toLowerCase() !== runtimeUpgradeAddress.toLowerCase()) {
     console.log(`System addresses: ${JSON.stringify(systemAddresses, null, 2)}`)
@@ -143,8 +123,6 @@ const newContractUsingTypes = async (owner, params, types = {}) => {
   await (await InjectorContextHolder.at(governance.address)).init({from: owner});
   await (await InjectorContextHolder.at(chainConfig.address)).init({from: owner});
   await (await InjectorContextHolder.at(deployerProxy.address)).init({from: owner});
-  await (await InjectorContextHolder.at(reward.address)).init({from: owner});
-  await (await InjectorContextHolder.at(reserve.address)).init({from: owner});
   // map proxies to the correct ABIs
   return {
     staking: await Staking.at(staking.address),
@@ -158,8 +136,6 @@ const newContractUsingTypes = async (owner, params, types = {}) => {
     runtimeUpgrade,
     deployer: await DeployerProxy.at(deployerProxy.address),
     deployerProxy: await DeployerProxy.at(deployerProxy.address),
-    reward: await Reward.at(reward.address),
-    reserve: await Reserve.at(reserve.address),
   }
 }
 
@@ -173,8 +149,6 @@ const newMockContract = async (owner, params = {}) => {
     Staking: FakeStaking,
     StakingPool: FakeStakingPool,
     SystemReward: FakeSystemReward,
-    Reward: FakeReward,
-    Reserve: FakeReserve,
   });
 }
 
