@@ -539,14 +539,15 @@ contract Staking is InjectorContextHolder, IStaking {
         systemFee = 0;
     }
 
-    function registerValidator(address validatorAddress, uint16 commissionRate) payable external override {
-        uint256 initialStake = msg.value;
-        // // initial stake amount should be greater than minimum validator staking amount
-        require(initialStake >= _CHAIN_CONFIG_CONTRACT.getMinValidatorStakeAmount(), "too low");
-        require(initialStake % BALANCE_COMPACT_PRECISION == 0, "no remainder");
-        // add new validator as pending
-        _addValidator(validatorAddress, msg.sender, ValidatorStatus.Pending, commissionRate, initialStake, nextEpoch());
-    }
+    // fix(seven): temp hack for code size too large
+    // function registerValidator(address validatorAddress, uint16 commissionRate) payable external override {
+    //     uint256 initialStake = msg.value;
+    //     // // initial stake amount should be greater than minimum validator staking amount
+    //     require(initialStake >= _CHAIN_CONFIG_CONTRACT.getMinValidatorStakeAmount(), "too low");
+    //     require(initialStake % BALANCE_COMPACT_PRECISION == 0, "no remainder");
+    //     // add new validator as pending
+    //     _addValidator(validatorAddress, msg.sender, ValidatorStatus.Pending, commissionRate, initialStake, nextEpoch());
+    // }
 
     function addValidator(address account) external onlyFromGovernance virtual override {
         _addValidator(account, account, ValidatorStatus.Active, 0, 0, nextEpoch());
