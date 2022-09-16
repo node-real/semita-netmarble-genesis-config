@@ -13,9 +13,7 @@ contract FakeRuntimeUpgrade is RuntimeUpgrade {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract,
-        IReward rewardContract,
-        IReserve reserveContract
+        IDeployerProxy deployerProxyContract
     ) RuntimeUpgrade(
         stakingContract,
         slashingIndicatorContract,
@@ -24,9 +22,7 @@ contract FakeRuntimeUpgrade is RuntimeUpgrade {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract,
-        rewardContract,
-        reserveContract
+        deployerProxyContract
     ) {
     }
 
@@ -43,10 +39,6 @@ contract FakeRuntimeUpgrade is RuntimeUpgrade {
     }
 
     modifier onlyBlock(uint64 /*blockNumber*/) override {
-        _;
-    }
-
-    modifier onlyFromReward() override {
         _;
     }
 }

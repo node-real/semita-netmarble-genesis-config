@@ -13,9 +13,7 @@ contract FakeStakingPool is StakingPool {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract,
-        IReward rewardContract,
-        IReserve reserveContract
+        IDeployerProxy deployerProxyContract
     ) StakingPool(
         stakingContract,
         slashingIndicatorContract,
@@ -24,9 +22,7 @@ contract FakeStakingPool is StakingPool {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract,
-        rewardContract,
-        reserveContract
+        deployerProxyContract
     ) {
     }
 
@@ -43,10 +39,6 @@ contract FakeStakingPool is StakingPool {
     }
 
     modifier onlyBlock(uint64 /*blockNumber*/) override {
-        _;
-    }
-
-    modifier onlyFromReward() override {
         _;
     }
 }

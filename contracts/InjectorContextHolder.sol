@@ -16,8 +16,6 @@ import "./interfaces/IRuntimeUpgrade.sol";
 import "./interfaces/IStakingPool.sol";
 import "./interfaces/IInjectorContextHolder.sol";
 import "./interfaces/IDeployerProxy.sol";
-import "./interfaces/IReward.sol";
-import "./interfaces/IReserve.sol";
 
 abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorContextHolder {
 
@@ -34,9 +32,6 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
     IChainConfig internal immutable _CHAIN_CONFIG_CONTRACT;
     IRuntimeUpgrade internal immutable _RUNTIME_UPGRADE_CONTRACT;
     IDeployerProxy internal immutable _DEPLOYER_PROXY_CONTRACT;
-    // custom smart contracts
-    IReward internal immutable _REWARD_CONTRACT;
-    IReserve internal immutable _RESERVE_CONTRACT;
 
     // delayed initializer input data (only for parlia mode)
     bytes internal _delayedInitializer;
@@ -47,11 +42,9 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
     uint256[_LAYOUT_OFFSET - _SKIP_OFFSET - 2] private __reserved;
 
     error OnlyCoinbase(address coinbase);
-    error OnlyStaking();
     error OnlySlashingIndicator();
     error OnlyGovernance();
     error OnlyBlock(uint64 blockNumber);
-    error OnlyReward();
 
     constructor(
         IStaking stakingContract,
@@ -61,9 +54,7 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract,
-        IReward rewardContract,
-        IReserve reserveContract
+        IDeployerProxy deployerProxyContract
     ) {
         _STAKING_CONTRACT = stakingContract;
         _SLASHING_INDICATOR_CONTRACT = slashingIndicatorContract;
@@ -73,8 +64,6 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
         _CHAIN_CONFIG_CONTRACT = chainConfigContract;
         _RUNTIME_UPGRADE_CONTRACT = runtimeUpgradeContract;
         _DEPLOYER_PROXY_CONTRACT = deployerProxyContract;
-        _REWARD_CONTRACT = rewardContract;
-        _RESERVE_CONTRACT = reserveContract;
     }
 
     function useDelayedInitializer(bytes memory delayedInitializer) external onlyBlock(0) {
@@ -98,11 +87,6 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
         _;
     }
 
-    modifier onlyFromStaking() virtual {
-        if (IStaking(msg.sender) != _STAKING_CONTRACT) revert OnlyStaking();
-        _;
-    }
-
     modifier onlyFromSlashingIndicator() virtual {
         if (ISlashingIndicator(msg.sender) != _SLASHING_INDICATOR_CONTRACT) revert OnlySlashingIndicator();
         _;
@@ -115,11 +99,6 @@ abstract contract InjectorContextHolder is Initializable, Multicall, IInjectorCo
 
     modifier onlyBlock(uint64 blockNumber) virtual {
         if (block.number != blockNumber) revert OnlyBlock(blockNumber);
-        _;
-    }
-
-    modifier onlyFromReward() virtual {
-        if (IReward(msg.sender) != _REWARD_CONTRACT) revert OnlyReward();
         _;
     }
 }

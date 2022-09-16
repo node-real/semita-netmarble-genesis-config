@@ -13,9 +13,7 @@ contract FakeDeployerProxy is DeployerProxy {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract,
-        IReward rewardContract,
-        IReserve reserveContract
+        IDeployerProxy deployerProxyContract
     ) DeployerProxy(
         stakingContract,
         slashingIndicatorContract,
@@ -24,9 +22,7 @@ contract FakeDeployerProxy is DeployerProxy {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract,
-        rewardContract,
-        reserveContract
+        deployerProxyContract
     ) {
     }
 
@@ -43,10 +39,6 @@ contract FakeDeployerProxy is DeployerProxy {
     }
 
     modifier onlyBlock(uint64 /*blockNumber*/) override {
-        _;
-    }
-
-    modifier onlyFromReward() override {
         _;
     }
 }

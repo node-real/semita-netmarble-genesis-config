@@ -15,9 +15,7 @@ contract StorageLayoutChecker is InjectorContextHolder {
         IGovernance governanceContract,
         IChainConfig chainConfigContract,
         IRuntimeUpgrade runtimeUpgradeContract,
-        IDeployerProxy deployerProxyContract,
-        IReward rewardContract,
-        IReserve reserveContract
+        IDeployerProxy deployerProxyContract
     ) InjectorContextHolder(
         stakingContract,
         slashingIndicatorContract,
@@ -26,9 +24,7 @@ contract StorageLayoutChecker is InjectorContextHolder {
         governanceContract,
         chainConfigContract,
         runtimeUpgradeContract,
-        deployerProxyContract,
-        rewardContract,
-        reserveContract
+        deployerProxyContract
     ) {
     }
 
