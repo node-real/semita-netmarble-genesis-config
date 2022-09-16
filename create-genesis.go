@@ -157,6 +157,7 @@ type genesisConfig struct {
 	Faucet              map[common.Address]string `json:"faucet"`
 	CommissionRate      int64                     `json:"commissionRate"`
 	InitialStakes       map[common.Address]string `json:"initialStakes"`
+	BlockRewards        *math.HexOrDecimal256     `json:"blockRewards"`
 	FreeGasAddressAdmin common.Address            `json:"freeGasAddressAdmin"`
 }
 
@@ -251,7 +252,7 @@ func invokeConstructorOrPanic(genesis *core.Genesis, systemContract common.Addre
 	} else {
 		bytecode = createProxyBytecodeWithConstructor(rawArtifact, typeNames, params)
 	}
-	result, _, err := virtualMachine.CreateWithAddress(vm.AccountRef(common.Address{}), bytecode, 10_000_000, big.NewInt(0), systemContract)
+	result, _, err := virtualMachine.CreateWithAddress(common.Address{}, bytecode, 10_000_000, big.NewInt(0), systemContract)
 	if err != nil {
 		traceCallError(result)
 		panic(err)
@@ -360,6 +361,13 @@ func createGenesisConfig(config genesisConfig, targetFile string) error {
 	return ioutil.WriteFile(targetFile, newJson, fs.ModePerm)
 }
 
+func decimalToBigInt(value *math.HexOrDecimal256) *big.Int {
+	if value == nil {
+		return nil
+	}
+	return (*big.Int)(value)
+}
+
 func defaultGenesisConfig(config genesisConfig) *core.Genesis {
 	chainConfig := &params.ChainConfig{
 		ChainID:             big.NewInt(config.ChainId),
@@ -376,9 +384,11 @@ func defaultGenesisConfig(config genesisConfig) *core.Genesis {
 		NielsBlock:          big.NewInt(0),
 		MirrorSyncBlock:     big.NewInt(0),
 		BrunoBlock:          big.NewInt(0),
+		BlockRewardsBlock:   big.NewInt(0),
 		Parlia: &params.ParliaConfig{
 			Period: 3,
 			// epoch length is managed by consensus params
+			BlockRewards: decimalToBigInt(config.BlockRewards),
 		},
 	}
 	// by default runtime upgrades are disabled
