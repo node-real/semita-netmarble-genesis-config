@@ -39,10 +39,10 @@ interface IStaking is IValidatorSet {
 
     function getValidatorByOwner(address owner) external view returns (address);
 
-    // fix(seven): temp hack for code size too large
-    // function registerValidator(address validator, uint16 commissionRate) payable external;
+    function registerValidator(address validator, uint16 commissionRate) payable external;
 
-    function addValidator(address validator) external;
+    // fix(seven): temp hack for code size too large
+    // function addValidator(address validator) external;
 
     function removeValidator(address validator) external;
 
