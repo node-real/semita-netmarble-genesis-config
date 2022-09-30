@@ -10,6 +10,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"time"
 	"unicode"
 	"unsafe"
 
@@ -144,7 +145,8 @@ type consensusParams struct {
 }
 
 type genesisConfig struct {
-	ChainId  int64 `json:"chainId"`
+	ChainId  int64  `json:"chainId"`
+	GasLimit uint64 `json:"gasLimit"`
 	Features struct {
 		RuntimeUpgradeBlock *math.HexOrDecimal256 `json:"runtimeUpgradeBlock"`
 	} `json:"features"`
@@ -398,9 +400,9 @@ func defaultGenesisConfig(config genesisConfig) *core.Genesis {
 	return &core.Genesis{
 		Config:     chainConfig,
 		Nonce:      0,
-		Timestamp:  0x5e9da7ce,
+		Timestamp:  uint64(time.Now().Unix()),
 		ExtraData:  nil,
-		GasLimit:   0x2625a00,
+		GasLimit:   config.GasLimit,
 		Difficulty: big.NewInt(0x01),
 		Mixhash:    common.Hash{},
 		Coinbase:   common.Address{},
