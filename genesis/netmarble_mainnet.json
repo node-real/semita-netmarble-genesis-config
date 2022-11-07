@@ -1,0 +1,42 @@
+{
+  "chainId": 73,
+  "gasLimit": 119610000,
+  "validators": [
+    "0xe016D750D86bb7B5B9c1eB2a5b8E4EA4e292Ed87",
+    "0x64273EbafA3382121D8c89f96033d8a66cC3e050",
+    "0xD547f31dB10d368CB93Cfe21393f77b4Dc19D2EC"
+  ],
+  "owners": [
+    "0xa7c09466e451540811261b00a98fAa1Dc46fe259",
+    "0x6E49A0c1D250DD1f4f40Af97DDD54F4Fee144e0D",
+    "0x1B684D73A1832Df611801aE53950F4c4F7210cA4"
+  ],
+  "systemTreasury": {
+    "0xcd9aC5b24b5ADD07BC65842C21b9ab9Dd1BF1d9B": 10000
+  },
+  "freeGasAddressAdmin": "0x9e5f93b10a091982e0adc21d033af5855e1822c7",
+  "consensusParams": {
+    "activeValidatorsLength": 5,
+    "epochBlockInterval": 28800,
+    "misdemeanorThreshold": 240,
+    "felonyThreshold": 500,
+    "validatorJailEpochLength": 7,
+    "undelegatePeriod": 6,
+    "minValidatorStakeAmount": "0x84595161401484a000000",
+    "minStakingAmount": "0x3635c9adc5dea00000"
+  },
+  "initialStakes": {
+    "0xe016D750D86bb7B5B9c1eB2a5b8E4EA4e292Ed87": "0x84595161401484a000000",
+    "0x64273EbafA3382121D8c89f96033d8a66cC3e050": "0x84595161401484a000000",
+    "0xD547f31dB10d368CB93Cfe21393f77b4Dc19D2EC": "0x84595161401484a000000"
+  },
+  "blockRewards": "5000000000000000000",
+  "votingPeriod": 201600,
+  "faucet": {
+    "0x4F02C6f7482c2e777d1CF7E6eE49B5B2B2cc1A27": "0x244d52a507ba72b08900000",
+    "0x8848623B0F9beD9a35eD484540e0e185af1B7Aa5": "0x31d5cee86f85e39c580000",
+    "0x4086dF8D053E34eF766786EC3024ea6F4a93CC32": "0x18d0bf423c03d8de000000",
+    "0x18746622e8F82b4C75E108567173594a96fbcfc1": "0x18d0bf423c03d8de000000",
+    "0x0a946Ba66a833501393363Cff5BE59bE072711F4": "0x7a1105a03147a3a9180000"
+  }
+}
