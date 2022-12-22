@@ -84,4 +84,6 @@ interface IStaking is IValidatorSet {
     function redelegateDelegatorFee(address validator) external;
 
     function slash(address validator) external;
+
+    function distributeRewards(address validatorAddress,uint256 blockRewards, uint256 gasFee) external payable;
 }

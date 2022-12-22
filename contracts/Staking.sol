@@ -2,6 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "./InjectorContextHolder.sol";
+import "./interfaces/IChainConfig.sol";
+import "./ChainConfig.sol";
 
 contract Staking is InjectorContextHolder, IStaking {
 
@@ -709,6 +711,55 @@ contract Staking is InjectorContextHolder, IStaking {
 
     function deposit(address validatorAddress) external payable onlyFromCoinbase virtual override {
         _depositFee(validatorAddress);
+    }
+
+    function distributeRewards(address validatorAddress,uint256 blockRewards, uint256 gasFee) external payable onlyFromCoinbase virtual override {
+        _distributeRewards(validatorAddress,blockRewards,gasFee);
+    }
+
+    function _distributeRewards(address validatorAddress,uint256 blockRewards, uint256 gasFee) internal {
+
+        //_safeTransferWithGasLimit
+        //payable(deadAddress).transfer(amount);
+        // msg.value - 
+
+        if(gasFee >0){
+            payable(_CHAIN_CONFIG_CONTRACT.getFoundationAddress()).transfer(gasFee);
+        }
+        if (blockRewards<= 0) {
+            return;
+        }
+
+        uint16 validatorRewardsShare;
+        IChainConfig.DistributeRewardsShare[] memory  distributionRewardsShares;
+        
+        (validatorRewardsShare,distributionRewardsShares)=_CHAIN_CONFIG_CONTRACT.getDistributeRewardsShares();
+
+        
+        uint256 validatorRewards = blockRewards*validatorRewardsShare / 10000;
+
+        uint256 amountToPay = blockRewards- validatorRewards;
+        uint256 totalPaid = 0;
+        for (uint256 i = 0; i < distributionRewardsShares.length; i++) {
+            IChainConfig.DistributeRewardsShare memory ds = distributionRewardsShares[i];
+            uint256 accountRewards = amountToPay * ds.share / 10000;
+            payable(ds.account).transfer(accountRewards);
+          //  emit FeeClaimed(ds.account, accountFee);
+            totalPaid += accountRewards;
+        }
+        // return some dust back to the acc
+        uint256 dustRewards = amountToPay - totalPaid;
+        if(dustRewards>0){
+            if(validatorRewardsShare>0){
+                validatorRewards=validatorRewards+dustRewards;
+            }else{
+                payable(distributionRewardsShares[0].account).transfer(dustRewards); 
+            } 
+        }
+        if(validatorRewards>0){
+            _depositFee(validatorAddress);
+        }
+
     }
 
     function _depositFee(address validatorAddress) internal {
