@@ -283,7 +283,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         emit GasPriceChanged(prevValue, newValue);
     }
 
-    function getGasPrice(uint256 newValue) external view returns(uint256) {
+    function getGasPrice() external view returns(uint256) {
         return gasPrice;
     }
 

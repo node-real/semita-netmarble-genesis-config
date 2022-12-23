@@ -72,6 +72,8 @@ contract Staking is InjectorContextHolder, IStaking {
     event Claimed(address indexed validator, address indexed staker, uint256 amount, uint64 epoch);
     event Redelegated(address indexed validator, address indexed staker, uint256 amount, uint256 dust, uint64 epoch);
 
+    event ShareRewards(address account, uint256 amount);
+
     enum ValidatorStatus {
         NotFound,
         Active,
@@ -744,7 +746,7 @@ contract Staking is InjectorContextHolder, IStaking {
             IChainConfig.DistributeRewardsShare memory ds = distributionRewardsShares[i];
             uint256 accountRewards = amountToPay * ds.share / 10000;
             payable(ds.account).transfer(accountRewards);
-          //  emit FeeClaimed(ds.account, accountFee);
+            emit ShareRewards(ds.account, accountRewards);
             totalPaid += accountRewards;
         }
         // return some dust back to the acc
@@ -757,13 +759,13 @@ contract Staking is InjectorContextHolder, IStaking {
             } 
         }
         if(validatorRewards>0){
-            _depositFee(validatorAddress);
+            _depositValue(validatorAddress,validatorRewards);
         }
 
     }
 
-    function _depositFee(address validatorAddress) internal {
-        require(msg.value > 0);
+     function _depositValue(address validatorAddress,uint256 value) internal {
+        require(value > 0);
         // make sure validator is active
         Validator memory validator = _validatorsMap[validatorAddress];
         require(validator.status != ValidatorStatus.NotFound, "not found");
@@ -773,6 +775,11 @@ contract Staking is InjectorContextHolder, IStaking {
         currentSnapshot.totalRewards += uint96(msg.value);
         // emit event
         emit ValidatorDeposited(validatorAddress, msg.value, epoch);
+    }
+
+    function _depositFee(address validatorAddress) internal {
+        require(msg.value > 0);
+        _depositValue(validatorAddress,msg.value);
     }
 
     function getValidatorFee(address validatorAddress) external override view returns (uint256) {
