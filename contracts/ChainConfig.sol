@@ -297,6 +297,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
 
     function _updateDistributeRewardsShares(uint16 validatorShare,address[] calldata accounts, uint16[] calldata shares) internal {
         require(accounts.length == shares.length, "bad length");
+        require(accounts.length <=5, "too many accounts");
         require(validatorShare >= SHARE_MIN_VALUE, "bad validator share distribution");
         validatorRewardsShare=validatorShare;
         emit ValidatorRewardsShareChanged(validatorShare);
