@@ -72,6 +72,7 @@ contract Staking is InjectorContextHolder, IStaking {
     event Claimed(address indexed validator, address indexed staker, uint256 amount, uint64 epoch);
     event Redelegated(address indexed validator, address indexed staker, uint256 amount, uint256 dust, uint64 epoch);
 
+    // Fncy II 
     event ShareRewards(address account, uint256 amount);
 
     enum ValidatorStatus {
@@ -715,18 +716,21 @@ contract Staking is InjectorContextHolder, IStaking {
         _depositFee(validatorAddress);
     }
 
+    // FNCY II 
     function distributeRewards(address validatorAddress,uint256 blockRewards, uint256 gasFee) external payable onlyFromCoinbase virtual override {
         _distributeRewards(validatorAddress,blockRewards,gasFee);
     }
 
     function _distributeRewards(address validatorAddress,uint256 blockRewards, uint256 gasFee) internal {
-
-        //_safeTransferWithGasLimit
-        //payable(deadAddress).transfer(amount);
-        // msg.value - 
-
+        require(msg.value == blockRewards+gasFee,"bad rewards");
         if(gasFee >0){
-            payable(_CHAIN_CONFIG_CONTRACT.getFoundationAddress()).transfer(gasFee);
+            if (_CHAIN_CONFIG_CONTRACT.getFoundationAddress() == address(0x00)){
+                blockRewards = blockRewards+gasFee;
+            }else{
+                payable(_CHAIN_CONFIG_CONTRACT.getFoundationAddress()).transfer(gasFee);
+                emit ShareRewards(_CHAIN_CONFIG_CONTRACT.getFoundationAddress(), gasFee);
+                
+            }
         }
         if (blockRewards<= 0) {
             return;
@@ -734,23 +738,23 @@ contract Staking is InjectorContextHolder, IStaking {
 
         uint16 validatorRewardsShare;
         IChainConfig.DistributeRewardsShare[] memory  distributionRewardsShares;
-        
         (validatorRewardsShare,distributionRewardsShares)=_CHAIN_CONFIG_CONTRACT.getDistributeRewardsShares();
-
-        
+       
+        if (distributionRewardsShares.length==0){
+            _depositValue(validatorAddress,blockRewards);
+            return;
+        }
         uint256 validatorRewards = blockRewards*validatorRewardsShare / 10000;
-
-        uint256 amountToPay = blockRewards- validatorRewards;
         uint256 totalPaid = 0;
         for (uint256 i = 0; i < distributionRewardsShares.length; i++) {
-            IChainConfig.DistributeRewardsShare memory ds = distributionRewardsShares[i];
-            uint256 accountRewards = amountToPay * ds.share / 10000;
-            payable(ds.account).transfer(accountRewards);
-            emit ShareRewards(ds.account, accountRewards);
-            totalPaid += accountRewards;
+               IChainConfig.DistributeRewardsShare memory ds = distributionRewardsShares[i];
+               uint256 accountRewards = blockRewards * ds.share / 10000;
+               payable(ds.account).transfer(accountRewards);
+               emit ShareRewards(ds.account, accountRewards);
+               totalPaid += accountRewards;
+
         }
-        // return some dust back to the acc
-        uint256 dustRewards = amountToPay - totalPaid;
+        uint256 dustRewards = blockRewards- validatorRewards - totalPaid;
         if(dustRewards>0){
             if(validatorRewardsShare>0){
                 validatorRewards=validatorRewards+dustRewards;
@@ -765,7 +769,7 @@ contract Staking is InjectorContextHolder, IStaking {
     }
 
      function _depositValue(address validatorAddress,uint256 value) internal {
-        require(value > 0);
+        require(value > 0 && value <= msg.value);
         // make sure validator is active
         Validator memory validator = _validatorsMap[validatorAddress];
         require(validator.status != ValidatorStatus.NotFound, "not found");
@@ -774,7 +778,7 @@ contract Staking is InjectorContextHolder, IStaking {
         ValidatorSnapshot storage currentSnapshot = _touchValidatorSnapshot(validator, epoch);
         currentSnapshot.totalRewards += uint96(msg.value);
         // emit event
-        emit ValidatorDeposited(validatorAddress, msg.value, epoch);
+        emit ValidatorDeposited(validatorAddress, value, epoch);
     }
 
     function _depositFee(address validatorAddress) internal {
