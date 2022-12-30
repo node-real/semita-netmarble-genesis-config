@@ -49,14 +49,10 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     /** FNCY II upgrade parameters**/
 
     uint256 private gasPrice;
-
     uint16 internal constant SHARE_MIN_VALUE = 0; // 0%
     uint16 internal constant SHARE_MAX_VALUE = 10000; // 100%
-   
     DistributeRewardsShare[] internal _distributeRewardsShares;
-
     uint16 validatorRewardsShare;
-
     address private foundationAddress;
 
     constructor(
