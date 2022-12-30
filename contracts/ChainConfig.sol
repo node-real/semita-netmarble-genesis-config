@@ -55,9 +55,9 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
    
     DistributeRewardsShare[] internal _distributeRewardsShares;
 
-    uint16 validatorRewardsShare=SHARE_MAX_VALUE;
+    uint16 validatorRewardsShare;
 
-    address private foundationAddress=0x0000000000000000000000000000000000001002;
+    address private foundationAddress;
 
     constructor(
         IStaking stakingContract,
