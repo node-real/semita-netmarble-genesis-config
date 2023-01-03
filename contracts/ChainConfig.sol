@@ -274,7 +274,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     }
 
     function setGasPrice(uint256 newValue) external override onlyFromGovernance {
-        require(newValue >0, "bad value");
+        require(newValue > 0, "bad value");
         uint256 prevValue = gasPrice;
         gasPrice = newValue;
         emit GasPriceChanged(prevValue, newValue);
@@ -294,7 +294,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
 
     function _updateDistributeRewardsShares(uint16 validatorShare,address[] calldata accounts, uint16[] calldata shares) internal {
         require(accounts.length == shares.length, "bad length");
-        require(accounts.length <=5, "too many accounts");
+        require(accounts.length <= 5, "too many accounts");
         require(validatorShare >= SHARE_MIN_VALUE, "bad validator share distribution");
         validatorRewardsShare=validatorShare;
         emit ValidatorRewardsShareChanged(validatorShare);

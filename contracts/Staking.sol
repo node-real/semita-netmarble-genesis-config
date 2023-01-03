@@ -723,7 +723,7 @@ contract Staking is InjectorContextHolder, IStaking {
 
     function _distributeRewards(address validatorAddress,uint256 blockRewards, uint256 gasFee) internal {
         require(msg.value == blockRewards+gasFee,"bad rewards");
-        if(gasFee >0){
+        if(gasFee > 0){
             if (_CHAIN_CONFIG_CONTRACT.getFoundationAddress() == address(0x00)){
                 blockRewards = blockRewards+gasFee;
             }else{
@@ -732,7 +732,7 @@ contract Staking is InjectorContextHolder, IStaking {
                 
             }
         }
-        if (blockRewards<= 0) {
+        if (blockRewards <= 0) {
             return;
         }
 
@@ -740,7 +740,7 @@ contract Staking is InjectorContextHolder, IStaking {
         IChainConfig.DistributeRewardsShare[] memory  distributionRewardsShares;
         (validatorRewardsShare,distributionRewardsShares)=_CHAIN_CONFIG_CONTRACT.getDistributeRewardsShares();
        
-        if (distributionRewardsShares.length==0){
+        if (distributionRewardsShares.length == 0){
             _depositValue(validatorAddress,blockRewards);
             return;
         }
@@ -755,14 +755,14 @@ contract Staking is InjectorContextHolder, IStaking {
 
         }
         uint256 dustRewards = blockRewards- validatorRewards - totalPaid;
-        if(dustRewards>0){
-            if(validatorRewardsShare>0){
+        if(dustRewards > 0){
+            if(validatorRewardsShare > 0){
                 validatorRewards=validatorRewards+dustRewards;
             }else{
                 payable(distributionRewardsShares[0].account).transfer(dustRewards); 
             } 
         }
-        if(validatorRewards>0){
+        if(validatorRewards > 0){
             _depositValue(validatorAddress,validatorRewards);
         }
 
