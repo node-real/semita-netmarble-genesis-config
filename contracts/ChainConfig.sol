@@ -284,22 +284,22 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         return gasPrice;
     }
 
-
-    function getDistributeRewardsShares() external view override returns (uint16 ,DistributeRewardsShare[] memory) {
+    function getDistributeRewardsShares() external view override returns (uint16 validatorRewardsShare,DistributeRewardsShare[] memory) {
         return (validatorRewardsShare,_distributeRewardsShares);
     }
+
     function updateDistributeRewardsShares(uint16 validatorShare, address[] calldata accounts, uint16[] calldata shares) external virtual override onlyFromGovernance {
-        _updateDistributeRewardsShares(validatorShare,accounts, shares);
+        _updateDistributeRewardsShares(validatorShare, accounts, shares);
     }
 
     function _updateDistributeRewardsShares(uint16 validatorShare,address[] calldata accounts, uint16[] calldata shares) internal {
         require(accounts.length == shares.length, "bad length");
         require(accounts.length <= 5, "too many accounts");
         require(validatorShare >= SHARE_MIN_VALUE, "bad validator share distribution");
-        validatorRewardsShare=validatorShare;
+        validatorRewardsShare = validatorShare;
         emit ValidatorRewardsShareChanged(validatorShare);
         uint16 totalShares = 0;
-        uint16 targetShares = SHARE_MAX_VALUE-validatorShare;
+        uint16 targetShares = SHARE_MAX_VALUE - validatorShare;
         for (uint256 i = 0; i < accounts.length; i++) {
             address account = accounts[i];
             uint16 share = shares[i];

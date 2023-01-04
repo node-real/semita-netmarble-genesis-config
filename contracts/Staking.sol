@@ -722,24 +722,21 @@ contract Staking is InjectorContextHolder, IStaking {
     }
 
     function _distributeRewards(address validatorAddress,uint256 blockRewards, uint256 gasFee) internal {
-        require(msg.value == blockRewards+gasFee,"bad rewards");
-        if(gasFee > 0){
+        require(msg.value == blockRewards + gasFee, "bad rewards");
+        if (gasFee > 0) {
             if (_CHAIN_CONFIG_CONTRACT.getFoundationAddress() == address(0x00)){
-                blockRewards = blockRewards+gasFee;
+                blockRewards = blockRewards + gasFee;
             }else{
                 payable(_CHAIN_CONFIG_CONTRACT.getFoundationAddress()).transfer(gasFee);
                 emit ShareRewards(_CHAIN_CONFIG_CONTRACT.getFoundationAddress(), gasFee);
-                
             }
         }
         if (blockRewards <= 0) {
             return;
         }
-
         uint16 validatorRewardsShare;
         IChainConfig.DistributeRewardsShare[] memory  distributionRewardsShares;
-        (validatorRewardsShare,distributionRewardsShares)=_CHAIN_CONFIG_CONTRACT.getDistributeRewardsShares();
-       
+        (validatorRewardsShare,distributionRewardsShares) = _CHAIN_CONFIG_CONTRACT.getDistributeRewardsShares();
         if (distributionRewardsShares.length == 0){
             _depositValue(validatorAddress,blockRewards);
             return;
@@ -752,20 +749,18 @@ contract Staking is InjectorContextHolder, IStaking {
                payable(ds.account).transfer(accountRewards);
                emit ShareRewards(ds.account, accountRewards);
                totalPaid += accountRewards;
-
         }
-        uint256 dustRewards = blockRewards- validatorRewards - totalPaid;
-        if(dustRewards > 0){
-            if(validatorRewardsShare > 0){
-                validatorRewards=validatorRewards+dustRewards;
-            }else{
+        uint256 dustRewards = blockRewards - validatorRewards - totalPaid;
+        if (dustRewards > 0) {
+            if (validatorRewardsShare > 0) {
+                validatorRewards = validatorRewards + dustRewards;
+            } else {
                 payable(distributionRewardsShares[0].account).transfer(dustRewards); 
             } 
         }
-        if(validatorRewards > 0){
+        if (validatorRewards > 0) {
             _depositValue(validatorAddress,validatorRewards);
         }
-
     }
 
      function _depositValue(address validatorAddress,uint256 value) internal {
