@@ -723,22 +723,23 @@ contract Staking is InjectorContextHolder, IStaking {
 
     function _distributeRewards(address validatorAddress,uint256 blockRewards, uint256 gasFee) internal {
         require(msg.value == blockRewards + gasFee, "bad rewards");
+        address foundationAddress = _CHAIN_CONFIG_CONTRACT.getFoundationAddress();
         if (gasFee > 0) {
-            if (_CHAIN_CONFIG_CONTRACT.getFoundationAddress() == address(0x00)){
+            if (foundationAddress == address(0x00)){
                 blockRewards = blockRewards + gasFee;
-            }else{
-                payable(_CHAIN_CONFIG_CONTRACT.getFoundationAddress()).transfer(gasFee);
-                emit ShareRewards(_CHAIN_CONFIG_CONTRACT.getFoundationAddress(), gasFee);
+            } else {
+                payable(foundationAddress).transfer(gasFee);
+                emit ShareRewards(foundationAddress, gasFee);
             }
         }
         if (blockRewards <= 0) {
             return;
         }
         uint16 validatorRewardsShare;
-        IChainConfig.DistributeRewardsShare[] memory  distributionRewardsShares;
-        (validatorRewardsShare,distributionRewardsShares) = _CHAIN_CONFIG_CONTRACT.getDistributeRewardsShares();
+        IChainConfig.DistributeRewardsShare[] memory distributionRewardsShares;
+        (validatorRewardsShare, distributionRewardsShares) = _CHAIN_CONFIG_CONTRACT.getDistributeRewardsShares();
         if (distributionRewardsShares.length == 0){
-            _depositValue(validatorAddress,blockRewards);
+            _depositValue(validatorAddress, blockRewards);
             return;
         }
         uint256 validatorRewards = blockRewards*validatorRewardsShare / 10000;
@@ -759,11 +760,11 @@ contract Staking is InjectorContextHolder, IStaking {
             } 
         }
         if (validatorRewards > 0) {
-            _depositValue(validatorAddress,validatorRewards);
+            _depositValue(validatorAddress, validatorRewards);
         }
     }
 
-     function _depositValue(address validatorAddress,uint256 value) internal {
+     function _depositValue(address validatorAddress, uint256 value) internal {
         require(value > 0 && value <= msg.value);
         // make sure validator is active
         Validator memory validator = _validatorsMap[validatorAddress];
@@ -778,7 +779,7 @@ contract Staking is InjectorContextHolder, IStaking {
 
     function _depositFee(address validatorAddress) internal {
         require(msg.value > 0);
-        _depositValue(validatorAddress,msg.value);
+        _depositValue(validatorAddress, msg.value);
     }
 
     function getValidatorFee(address validatorAddress) external override view returns (uint256) {
