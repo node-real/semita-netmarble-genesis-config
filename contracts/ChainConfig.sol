@@ -24,7 +24,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     event GasPriceChanged(uint256 preValue, uint256 newValue);
     event DistributeRewardsShareChanged(address account, uint16 share);
     event ValidatorRewardsShareChanged(uint16 share);
-    event FoundationAddressChanged(address preValue,address newValue);
+    event FoundationAddressChanged(address preValue, address newValue);
 
     struct ConsensusParams {
         uint32 activeValidatorsLength;
@@ -284,18 +284,18 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         return gasPrice;
     }
 
-    function getDistributeRewardsShares() external view override returns (uint16 validatorRewardsShare,DistributeRewardsShare[] memory) {
-        return (validatorRewardsShare,_distributeRewardsShares);
+    function getDistributeRewardsShares() external view override returns (uint16 validatorRewardsShare, DistributeRewardsShare[] memory) {
+        return (validatorRewardsShare, _distributeRewardsShares);
     }
 
     function updateDistributeRewardsShares(uint16 validatorShare, address[] calldata accounts, uint16[] calldata shares) external virtual override onlyFromGovernance {
         _updateDistributeRewardsShares(validatorShare, accounts, shares);
     }
 
-    function _updateDistributeRewardsShares(uint16 validatorShare,address[] calldata accounts, uint16[] calldata shares) internal {
+    function _updateDistributeRewardsShares(uint16 validatorShare, address[] calldata accounts, uint16[] calldata shares) internal {
         require(accounts.length == shares.length, "bad length");
         require(accounts.length <= 5, "too many accounts");
-        require(validatorShare >= SHARE_MIN_VALUE, "bad validator share distribution");
+        require(validatorShare >= SHARE_MIN_VALUE && validatorShare <= SHARE_MAX_VALUE, "bad validator share distribution");
         validatorRewardsShare = validatorShare;
         emit ValidatorRewardsShareChanged(validatorShare);
         uint16 totalShares = 0;
@@ -319,7 +319,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     }
 
     function setFoundationAddress(address newValue) external override onlyFromGovernance {
-        require(newValue != address(0x00),"bas address"); 
+        require(newValue != address(0x00), "bas address");
         address prevValue = foundationAddress;
         foundationAddress = newValue;
         emit FoundationAddressChanged(prevValue, newValue);
