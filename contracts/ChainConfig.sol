@@ -275,6 +275,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
 
     function setGasPrice(uint256 newValue) external override onlyFromGovernance {
         require(newValue > 0, "bad value");
+        require(gasPrice != newValue, "same value");
         uint256 prevValue = gasPrice;
         gasPrice = newValue;
         emit GasPriceChanged(prevValue, newValue);
@@ -320,6 +321,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
 
     function setFoundationAddress(address newValue) external override onlyFromGovernance {
         require(newValue != address(0x00), "bas address");
+        require(foundationAddress != newValue, "same address");
         address prevValue = foundationAddress;
         foundationAddress = newValue;
         emit FoundationAddressChanged(prevValue, newValue);
