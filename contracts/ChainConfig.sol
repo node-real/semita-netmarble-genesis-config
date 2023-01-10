@@ -273,8 +273,12 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         emit EnableDelegateChanged(prevValue, newValue);
     }
 
+    /**
+        - min 1 gwei
+        - max 1,200,000 gwei
+    */
     function setGasPrice(uint256 newValue) external override onlyFromGovernance {
-        require(newValue > 0, "bad value");
+        require(newValue >= 1000000000 && newValue <= 1200000000000000, "bad value");
         require(gasPrice != newValue, "same value");
         uint256 prevValue = gasPrice;
         gasPrice = newValue;
@@ -285,7 +289,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         return gasPrice;
     }
 
-    function getDistributeRewardsShares() external view override returns (uint16 validatorRewardsShare, DistributeRewardsShare[] memory) {
+    function getDistributeRewardsShares() external view override returns (uint16 , DistributeRewardsShare[] memory) {
         return (validatorRewardsShare, _distributeRewardsShares);
     }
 
