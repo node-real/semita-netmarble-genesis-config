@@ -289,7 +289,7 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         return gasPrice;
     }
 
-    function getDistributeRewardsShares() external view override returns (uint16 validatorRewardsShare, DistributeRewardsShare[] memory) {
+    function getDistributeRewardsShares() external view override returns (uint16 , DistributeRewardsShare[] memory) {
         return (validatorRewardsShare, _distributeRewardsShares);
     }
 
