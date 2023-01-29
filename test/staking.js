@@ -556,5 +556,26 @@ contract("Staking", async (accounts) => {
     // all validators are active
     assert.equal((await parlia.getValidatorStatus(validator1)).status.toString(), '1');
     assert.equal((await parlia.getValidatorStatus(validator2)).status.toString(), '1');
+  });
+  // FNCY II test
+  it("distributeRewards", async () => {
+    const {parlia, chainConfig} = await newMockContract(owner)
+    await chainConfig.setFoundationAddress('0x0000000000000000000000000000000000000123');
+    assert.equal(await chainConfig.getFoundationAddress(), '0x0000000000000000000000000000000000000123');
+    await chainConfig.setGasPrice(10000000001);
+    assert.equal(await chainConfig.getGasPrice(), 10000000001);
+    const accounts = ["0x0000000000000000000000000000000000000101", "0x0000000000000000000000000000000000000102"];
+    const shares = [3000, 3000];
+    await chainConfig.updateDistributeRewardsShares(4000, accounts, shares);
+    await parlia.addValidator(validator1);
+    await parlia.distributeRewards(validator1, '10000000000000000000', '1000000000000000000', {from: staker1, value: '11000000000000000000'}); // 10 + 1 = 11 eth
+    let foundationAddressBalance = new BigNumber(await web3.eth.getBalance('0x0000000000000000000000000000000000000123'));
+    assert.equal(foundationAddressBalance, '1000000000000000000');
+    let shares1 = new BigNumber(await web3.eth.getBalance("0x0000000000000000000000000000000000000101"));
+    assert.equal(shares1, '3000000000000000000');
+    let shares2 = new BigNumber(await web3.eth.getBalance("0x0000000000000000000000000000000000000102"));
+    assert.equal(shares2, '3000000000000000000');
+    let result = await parlia.getPendingValidatorFee(validator1);
+    assert.equal(result.toString(10), '4000000000000000000');
   })
 });
