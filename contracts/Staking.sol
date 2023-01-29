@@ -765,14 +765,14 @@ contract Staking is InjectorContextHolder, IStaking {
     }
 
      function _depositValue(address validatorAddress, uint256 value) internal {
-        require(value > 0 && value <= msg.value);
+        require(value > 0 && value <= msg.value, "bad value");
         // make sure validator is active
         Validator memory validator = _validatorsMap[validatorAddress];
         require(validator.status != ValidatorStatus.NotFound, "not found");
         uint64 epoch = currentEpoch();
         // increase total pending rewards for validator for current epoch
         ValidatorSnapshot storage currentSnapshot = _touchValidatorSnapshot(validator, epoch);
-        currentSnapshot.totalRewards += uint96(msg.value);
+        currentSnapshot.totalRewards += uint96(value);
         // emit event
         emit ValidatorDeposited(validatorAddress, value, epoch);
     }
