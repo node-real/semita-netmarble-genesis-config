@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "./InjectorContextHolder.sol";
-import "./interfaces/IChainConfig.sol";
 
 contract ChainConfig is InjectorContextHolder, IChainConfig {
 
@@ -19,12 +18,6 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     event FreeGasAddressSizeChanged(uint32 prevValue, uint32 newValue);
     event FreeGasAddressAdminChanged(address oldFreeGasAddressAdmin, address newFreeGasAddressAdmin);
     event EnableDelegateChanged(bool preValue, bool newValue);
-
-   /** FNCY II upgrade Events**/
-    event GasPriceChanged(uint256 preValue, uint256 newValue);
-    event DistributeRewardsShareChanged(address account, uint16 share);
-    event ValidatorRewardsShareChanged(uint16 share);
-    event FoundationAddressChanged(address preValue, address newValue);
 
     struct ConsensusParams {
         uint32 activeValidatorsLength;
@@ -44,16 +37,6 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
     uint32 public freeGasAddressSize;
     address[] private _freeGasAddressList;
     mapping(address => uint256) private _freeGasAddressMap;
-
-
-    /** FNCY II upgrade parameters**/
-
-    uint256 private gasPrice;
-    uint16 internal constant SHARE_MIN_VALUE = 0; // 0%
-    uint16 internal constant SHARE_MAX_VALUE = 10000; // 100%
-    DistributeRewardsShare[] internal _distributeRewardsShares;
-    uint16 validatorRewardsShare;
-    address private foundationAddress;
 
     constructor(
         IStaking stakingContract,
@@ -272,67 +255,4 @@ contract ChainConfig is InjectorContextHolder, IChainConfig {
         enableDelegate = newValue;
         emit EnableDelegateChanged(prevValue, newValue);
     }
-
-    /**
-        - min 1 gwei
-        - max 1,200,000 gwei
-    */
-    function setGasPrice(uint256 newValue) external override onlyFromGovernance {
-        require(newValue >= 1000000000 && newValue <= 1200000000000000, "bad value");
-        require(gasPrice != newValue, "same value");
-        uint256 prevValue = gasPrice;
-        gasPrice = newValue;
-        emit GasPriceChanged(prevValue, newValue);
-    }
-
-    function getGasPrice() external view returns(uint256) {
-        return gasPrice;
-    }
-
-    function getDistributeRewardsShares() external view override returns (uint16 , DistributeRewardsShare[] memory) {
-        return (validatorRewardsShare, _distributeRewardsShares);
-    }
-
-    function updateDistributeRewardsShares(uint16 validatorShare, address[] calldata accounts, uint16[] calldata shares) external virtual override onlyFromGovernance {
-        _updateDistributeRewardsShares(validatorShare, accounts, shares);
-    }
-
-    function _updateDistributeRewardsShares(uint16 validatorShare, address[] calldata accounts, uint16[] calldata shares) internal {
-        require(accounts.length == shares.length, "bad length");
-        require(accounts.length <= 5, "too many accounts");
-        require(validatorShare >= SHARE_MIN_VALUE && validatorShare <= SHARE_MAX_VALUE, "bad validator share distribution");
-        validatorRewardsShare = validatorShare;
-        emit ValidatorRewardsShareChanged(validatorShare);
-        uint16 totalShares = 0;
-        uint16 targetShares = SHARE_MAX_VALUE - validatorShare;
-        for (uint256 i = 0; i < accounts.length; i++) {
-            address account = accounts[i];
-            uint16 share = shares[i];
-            require(share > SHARE_MIN_VALUE && share <= SHARE_MAX_VALUE, "bad share distribution");
-            if (i >= _distributeRewardsShares.length) {
-                _distributeRewardsShares.push(DistributeRewardsShare(account, share));
-            } else {
-                _distributeRewardsShares[i] = DistributeRewardsShare(account, share);
-            }
-            emit DistributeRewardsShareChanged(account, share);
-            totalShares += share;
-        }
-        require(totalShares == targetShares, "bad share distribution");
-        assembly {
-            sstore(_distributeRewardsShares.slot, accounts.length)
-        }
-    }
-
-    function setFoundationAddress(address newValue) external override onlyFromGovernance {
-        require(newValue != address(0x00), "bas address");
-        require(foundationAddress != newValue, "same address");
-        address prevValue = foundationAddress;
-        foundationAddress = newValue;
-        emit FoundationAddressChanged(prevValue, newValue);
-    }
-
-     function getFoundationAddress() external view override returns (address) {
-        return foundationAddress;
-    }
-   
 }

@@ -2,8 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "./InjectorContextHolder.sol";
-import "./interfaces/IChainConfig.sol";
-import "./ChainConfig.sol";
 
 contract Staking is InjectorContextHolder, IStaking {
 
@@ -71,9 +69,6 @@ contract Staking is InjectorContextHolder, IStaking {
     event Undelegated(address indexed validator, address indexed staker, uint256 amount, uint64 epoch);
     event Claimed(address indexed validator, address indexed staker, uint256 amount, uint64 epoch);
     event Redelegated(address indexed validator, address indexed staker, uint256 amount, uint256 dust, uint64 epoch);
-
-    // Fncy II 
-    event ShareRewards(address account, uint256 amount);
 
     enum ValidatorStatus {
         NotFound,
@@ -716,70 +711,17 @@ contract Staking is InjectorContextHolder, IStaking {
         _depositFee(validatorAddress);
     }
 
-    // FNCY II 
-    function distributeRewards(address validatorAddress,uint256 blockRewards, uint256 gasFee) external payable onlyFromCoinbase virtual override {
-        _distributeRewards(validatorAddress,blockRewards,gasFee);
-    }
-
-    function _distributeRewards(address validatorAddress,uint256 blockRewards, uint256 gasFee) internal {
-        require(msg.value == blockRewards + gasFee, "bad rewards");
-        address foundationAddress = _CHAIN_CONFIG_CONTRACT.getFoundationAddress();
-        if (gasFee > 0) {
-            if (foundationAddress == address(0x00)){
-                blockRewards = blockRewards + gasFee;
-            } else {
-                payable(foundationAddress).transfer(gasFee);
-                emit ShareRewards(foundationAddress, gasFee);
-            }
-        }
-        if (blockRewards <= 0) {
-            return;
-        }
-        uint16 validatorRewardsShare;
-        IChainConfig.DistributeRewardsShare[] memory distributionRewardsShares;
-        (validatorRewardsShare, distributionRewardsShares) = _CHAIN_CONFIG_CONTRACT.getDistributeRewardsShares();
-        if (distributionRewardsShares.length == 0){
-            _depositValue(validatorAddress, blockRewards);
-            return;
-        }
-        uint256 validatorRewards = blockRewards*validatorRewardsShare / 10000;
-        uint256 totalPaid = 0;
-        for (uint256 i = 0; i < distributionRewardsShares.length; i++) {
-               IChainConfig.DistributeRewardsShare memory ds = distributionRewardsShares[i];
-               uint256 accountRewards = blockRewards * ds.share / 10000;
-               payable(ds.account).transfer(accountRewards);
-               emit ShareRewards(ds.account, accountRewards);
-               totalPaid += accountRewards;
-        }
-        uint256 dustRewards = blockRewards - validatorRewards - totalPaid;
-        if (dustRewards > 0) {
-            if (validatorRewardsShare > 0) {
-                validatorRewards = validatorRewards + dustRewards;
-            } else {
-                payable(distributionRewardsShares[0].account).transfer(dustRewards); 
-            } 
-        }
-        if (validatorRewards > 0) {
-            _depositValue(validatorAddress, validatorRewards);
-        }
-    }
-
-     function _depositValue(address validatorAddress, uint256 value) internal {
-        require(value > 0 && value <= msg.value, "bad value");
+    function _depositFee(address validatorAddress) internal {
+        require(msg.value > 0);
         // make sure validator is active
         Validator memory validator = _validatorsMap[validatorAddress];
         require(validator.status != ValidatorStatus.NotFound, "not found");
         uint64 epoch = currentEpoch();
         // increase total pending rewards for validator for current epoch
         ValidatorSnapshot storage currentSnapshot = _touchValidatorSnapshot(validator, epoch);
-        currentSnapshot.totalRewards += uint96(value);
+        currentSnapshot.totalRewards += uint96(msg.value);
         // emit event
-        emit ValidatorDeposited(validatorAddress, value, epoch);
-    }
-
-    function _depositFee(address validatorAddress) internal {
-        require(msg.value > 0);
-        _depositValue(validatorAddress, msg.value);
+        emit ValidatorDeposited(validatorAddress, msg.value, epoch);
     }
 
     function getValidatorFee(address validatorAddress) external override view returns (uint256) {

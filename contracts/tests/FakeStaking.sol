@@ -41,8 +41,4 @@ contract FakeStaking is Staking {
     modifier onlyBlock(uint64 /*blockNumber*/) override {
         _;
     }
-
-    function addValidator(address account) external {
-        _addValidator(account, account, ValidatorStatus.Active, 0, 0, nextEpoch());
-    }
 }

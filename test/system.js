@@ -9,7 +9,7 @@ const {newMockContract, expectError} = require('./helper')
 const BigNumber = require('bignumber.js');
 
 contract("SystemReward", async (accounts) => {
-  const [owner, treasury, governance, supply] = accounts
+  const [owner, treasury, governance] = accounts
   it("system fee is well calculated", async () => {
     const {systemReward} = await newMockContract(owner, {systemTreasury: treasury,})
     // send 1 ether
@@ -47,7 +47,6 @@ contract("SystemReward", async (accounts) => {
     let distributionShares = await systemReward.getDistributionShares();
     assert.equal(distributionShares[0].account, treasury);
     assert.equal(distributionShares[0].share, '10000'); // 100%
-    await web3.eth.sendTransaction({from: supply, to: owner, value: '99000000000000000000'});
     await web3.eth.sendTransaction({from: owner, to: systemReward.address, value: '49000000000000000000'}); // 49 ether
     const res1 = await systemReward.claimSystemFee();
     assert.equal(res1.logs[0].event, 'FeeClaimed');
