@@ -3,11 +3,6 @@ pragma solidity ^0.8.0;
 
 interface IChainConfig {
 
-    struct DistributeRewardsShare {
-        address account;
-        uint16 share;
-    }
-
     function getActiveValidatorsLength() external view returns (uint32);
 
     function setActiveValidatorsLength(uint32 newValue) external;
@@ -55,16 +50,4 @@ interface IChainConfig {
     function getEnableDelegate() external view returns (bool);
 
     function setEnableDelegate(bool newValue) external;
-    
-    function setGasPrice(uint256 newValue) external;
-
-    function updateDistributeRewardsShares(uint16 validatorShare, address[] calldata accounts, uint16[] calldata shares) external;
-
-     function getDistributeRewardsShares() external view returns (uint16 ,DistributeRewardsShare[] memory);
-     
-    function setFoundationAddress(address newValue) external;
-
-    function  getFoundationAddress() external view returns (address);
-
-
 }

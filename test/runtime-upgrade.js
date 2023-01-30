@@ -29,11 +29,10 @@ contract("RuntimeUpgrade", async (accounts) => {
     assert.equal(res2, '123');
   });
   it("upgrade though governance should work", async () => {
-    const {parlia, runtimeUpgrade, governance, chainConfig} = await newMockContract(owner, {
+    const {parlia, runtimeUpgrade, governance} = await newMockContract(owner, {
       genesisValidators: [validator1],
       votingPeriod: '5',
     });
-    await chainConfig.setEnableDelegate(true);
     await parlia.delegate(validator1, {value: '1000000000000000000', from: owner});
     await waitForNextEpoch(parlia);
     const runtimeUpgradeContract = new web3.eth.Contract(runtimeUpgrade.abi);

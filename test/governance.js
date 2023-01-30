@@ -10,10 +10,9 @@ const {newMockContract, waitForNextEpoch, expectError} = require('./helper')
 contract("Governance", async (accounts) => {
   const [owner, validator1, validator2, owner1, owner2] = accounts;
   it("voting power is well distributed for validators with different owners", async () => {
-    const {parlia, governance, chainConfig} = await newMockContract(owner, {
+    const {parlia, governance} = await newMockContract(owner, {
       genesisValidators: [validator1, validator2],
     });
-    await chainConfig.setEnableDelegate(true);
     await parlia.delegate(validator1, {value: '1000000000000000000', from: owner});
     await parlia.delegate(validator2, {value: '1000000000000000000', from: owner});
     await waitForNextEpoch(parlia);
@@ -32,11 +31,10 @@ contract("Governance", async (accounts) => {
     assert.equal((await governance.getVotingPower(owner2)).toString(), '1000000000000000000');
   });
   it("its impossible to abuse voting processing using owner switching", async () => {
-    const {parlia, governance, chainConfig} = await newMockContract(owner, {
+    const {parlia, governance} = await newMockContract(owner, {
       genesisValidators: [validator1, validator2],
       votingPeriod: '5',
     });
-    await chainConfig.setEnableDelegate(true);
     await parlia.delegate(validator1, {value: '1000000000000000000', from: owner}); // 50%
     await parlia.delegate(validator2, {value: '1000000000000000000', from: owner}); // 50%
     await waitForNextEpoch(parlia);
