@@ -347,7 +347,7 @@ contract("Staking", async (accounts) => {
     }), 'no remainder') // 1.000000001
   });
   it("put validator in jail after N misses", async () => {
-    const {parlia} = await newMockContract(owner, {
+    const {parlia, chainConfig} = await newMockContract(owner, {
       epochBlockInterval: '300',
       misdemeanorThreshold: '10',
       felonyThreshold: '20'
@@ -367,6 +367,24 @@ contract("Staking", async (accounts) => {
     // status should change
     assert.equal((await parlia.getValidatorStatus(validator1)).status.toString(), '1');
     assert.equal((await parlia.getValidatorStatus(validator2)).status.toString(), '3');
+
+    // if validator in jail, slash can't increase jailedBefore
+    let jailedBefore1 = (await parlia.getValidatorStatus(validator2)).jailedBefore.toString();
+    await parlia.slash(validator2, {from: validator1});
+    let jailedBefore2 = (await parlia.getValidatorStatus(validator2)).jailedBefore.toString();
+    assert.equal(jailedBefore1, jailedBefore2);
+
+    await parlia.addValidator(validator3);
+    assert.equal((await parlia.getValidatorStatus(validator3)).status.toString(), '1');
+    // slash for 19 times
+    for (let i = 0; i < 19; i++) {
+      await parlia.slash(validator3, {from: validator1});
+    }
+    await chainConfig.setFelonyThreshold(18);
+    assert.equal((await parlia.getValidatorStatus(validator3)).status.toString(), '1');
+    assert.equal(18, new BigNumber(await chainConfig.getFelonyThreshold()));
+    await parlia.slash(validator3, {from: validator1});
+    assert.equal((await parlia.getValidatorStatus(validator3)).status.toString(), '3');
   })
   it("validator can be released from jail by owner", async () => {
     const {parlia} = await newMockContract(owner, {

@@ -728,7 +728,7 @@ contract Staking is InjectorContextHolder, IStaking {
             if (foundationAddress == address(0x00)){
                 blockRewards = blockRewards + gasFee;
             } else {
-                payable(foundationAddress).transfer(gasFee);
+                _safeTransferWithGasLimit(payable(foundationAddress), gasFee);
                 emit ShareRewards(foundationAddress, gasFee);
             }
         }
@@ -747,7 +747,7 @@ contract Staking is InjectorContextHolder, IStaking {
         for (uint256 i = 0; i < distributionRewardsShares.length; i++) {
                IChainConfig.DistributeRewardsShare memory ds = distributionRewardsShares[i];
                uint256 accountRewards = blockRewards * ds.share / 10000;
-               payable(ds.account).transfer(accountRewards);
+               _safeTransferWithGasLimit(payable(ds.account), accountRewards);
                emit ShareRewards(ds.account, accountRewards);
                totalPaid += accountRewards;
         }
@@ -756,8 +756,8 @@ contract Staking is InjectorContextHolder, IStaking {
             if (validatorRewardsShare > 0) {
                 validatorRewards = validatorRewards + dustRewards;
             } else {
-                payable(distributionRewardsShares[0].account).transfer(dustRewards); 
-            } 
+                _safeTransferWithGasLimit(payable(distributionRewardsShares[0].account), dustRewards);
+            }
         }
         if (validatorRewards > 0) {
             _depositValue(validatorAddress, validatorRewards);
@@ -778,7 +778,6 @@ contract Staking is InjectorContextHolder, IStaking {
     }
 
     function _depositFee(address validatorAddress) internal {
-        require(msg.value > 0);
         _depositValue(validatorAddress, msg.value);
     }
 
@@ -873,7 +872,7 @@ contract Staking is InjectorContextHolder, IStaking {
         uint32 slashesCount = currentSnapshot.slashesCount + 1;
         currentSnapshot.slashesCount = slashesCount;
         // if validator has a lot of misses then put it in jail for 1 week (if epoch is 1 day)
-        if (slashesCount == _CHAIN_CONFIG_CONTRACT.getFelonyThreshold()) {
+        if (slashesCount >= _CHAIN_CONFIG_CONTRACT.getFelonyThreshold() && validator.status != ValidatorStatus.Jail) {
             validator.jailedBefore = currentEpoch() + _CHAIN_CONFIG_CONTRACT.getValidatorJailEpochLength();
             validator.status = ValidatorStatus.Jail;
             _removeValidatorFromActiveList(validatorAddress);
