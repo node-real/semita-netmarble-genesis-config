@@ -16,10 +16,13 @@
     "mirrorSyncBlock": 0,
     "brunoBlock": 0,
     "blockRewardsBlock": 0,
+    "contract48kBlock": 4377300,
+    "fncy2Block": 4385700,
     "parlia": {
       "period": 3,
       "epoch": 28800,
-      "blockRewards": 5000000000000000000
+      "blockRewards": 5000000000000000000,
+      "stopMintBlock": 200000001
     }
   },
   "nonce": "0x0",
